@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Sistema de Control de Juicios</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
+<script src="https://accounts.google.com/gsi/client" async></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:system-ui,-apple-system,sans-serif;background:#f8fafc;color:#1e293b;min-height:100vh}
@@ -124,6 +125,10 @@ textarea{min-height:70px;resize:vertical}
           <div class="wicon">💾</div>
           <div><div>Usar almacenamiento del navegador</div><div style="font-size:10px;font-weight:400;opacity:.7;margin-top:2px">Sin archivo externo — puede perderse si limpias el navegador</div></div>
         </button>
+        <button class="wbtn" style="background:#f0fdf4;color:#065f46;border-color:#86efac" id="btn-drive" onclick="driveSignIn()">
+          <div class="wicon" style="background:#d1fae5;font-size:20px">📂</div>
+          <div><div style="display:flex;align-items:center;gap:6px"><span>Conectar con Google Drive</span><span style="background:#4ade80;color:#fff;font-size:9px;font-weight:900;padding:1px 6px;border-radius:999px">NUEVO</span></div><div style="font-size:10px;font-weight:400;opacity:.7;margin-top:2px">Guarda y accede desde cualquier dispositivo</div></div>
+        </button>
       </div>
       <div class="wnote" id="wnote"></div>
     </div>
@@ -200,6 +205,8 @@ textarea{min-height:70px;resize:vertical}
 
 <script>
 const SK='juicios_v4';
+const GOOGLE_CLIENT_ID='81207561351-3uj9f9nn26jga7ecc947vdbh715onq5b.apps.googleusercontent.com';
+const DRIVE_FILE_NAME='expedientes-juicios.json';
 const ESTATUS=['En trámite','Sentencia favorable','Sentencia desfavorable','Sobreseído','Desistido','En cumplimiento','Cumplimentado','En revisión'];
 const TRAMITE=['Juicio de Amparo','Juicio Contencioso Administrativo','Recurso de Revisión','Recurso de Inconformidad','Otro'];
 const SUSP=['Sí','No','En trámite'];
@@ -215,7 +222,8 @@ const PR_MAP=Object.fromEntries(PRIORIDAD.map(p=>[p.v,p]));
 const EF={numeroJuicio:'',numeroExpedienteInterno:'',demandante:'',sala:'',unidadAdministrativa:'',actoImpugnado:'',tituloConcesion:'',numeroExpedienteAdministrativo:'',tipoJuicio:'',tipoTramite:'',autoridadDemandada:'',autoridadVinculada:'',fechaEmplazamiento:'',suspension:'No',fechaNotificacionSuspension:'',efectosSuspension:'',fechaSentencia:'',estatus:'En trámite',fechaEstatus:'',numeroRequerimientos:'',numeroApercibimientos:'',fechaUltimoApercibimiento:'',abogadoResponsable:'',fechaProximaAudiencia:'',notas:'',prioridad:'normal'};
 const SC={'En trámite':{bg:'#dbeafe',c:'#1e40af'},'Sentencia favorable':{bg:'#d1fae5',c:'#065f46'},'Sentencia desfavorable':{bg:'#fee2e2',c:'#991b1b'},'Sobreseído':{bg:'#f1f5f9',c:'#475569'},'Desistido':{bg:'#f8fafc',c:'#64748b'},'En cumplimiento':{bg:'#fef3c7',c:'#92400e'},'Cumplimentado':{bg:'#ccfbf1',c:'#065f46'},'En revisión':{bg:'#ede9fe',c:'#5b21b6'}};
 
-let fileHandle=null, useLS=false, fileName='', appPassword=null, pendingEnc=null;
+let fileHandle=null, useLS=false, useDrive=false, fileName='', appPassword=null, pendingEnc=null;
+let gToken=null, gTokenExpiry=0, driveFileId=null;
 let S={view:'lista',exps:[],form:{...EF},editId:null,sq:'',srs:[],sdone:false,rep:'estatus',delC:null,lf:'',det:null,sortBy:'reg-desc'};
 
 const fsOk='showOpenFilePicker' in window;
@@ -242,6 +250,107 @@ async function decryptJSON(b64, pass){
   return JSON.parse(new TextDecoder().decode(pt));
 }
 function isProtected(text){try{const o=JSON.parse(text);return o&&o.protected===true&&o.data;}catch{return false;}}
+
+// ── Google Drive integration ──
+function driveSignIn(){
+  if(typeof google==='undefined'||!google.accounts){
+    wnote('Los servicios de Google aún cargan, espera un momento e intenta de nuevo.');return;
+  }
+  wnote('Conectando con Google…');
+  const client=google.accounts.oauth2.initTokenClient({
+    client_id:GOOGLE_CLIENT_ID,
+    scope:'https://www.googleapis.com/auth/drive.file',
+    callback:async(resp)=>{
+      if(resp.error){wnote('No se pudo conectar con Google: '+resp.error);return;}
+      gToken=resp.access_token;
+      gTokenExpiry=Date.now()+(Number(resp.expires_in||3600)-120)*1000;
+      await driveLoadFile();
+    }
+  });
+  client.requestAccessToken();
+}
+
+async function driveEnsureToken(){
+  if(gToken&&Date.now()<gTokenExpiry)return true;
+  return new Promise(resolve=>{
+    try{
+      const client=google.accounts.oauth2.initTokenClient({
+        client_id:GOOGLE_CLIENT_ID,
+        scope:'https://www.googleapis.com/auth/drive.file',
+        prompt:'',
+        callback:(resp)=>{
+          if(resp.error){showToast('La sesión de Google expiró. Recarga la página para reconectar.',true);resolve(false);return;}
+          gToken=resp.access_token;
+          gTokenExpiry=Date.now()+(Number(resp.expires_in||3600)-120)*1000;
+          resolve(true);
+        }
+      });
+      client.requestAccessToken();
+    }catch{showToast('Error al renovar sesión de Google. Recarga la página.',true);resolve(false);}
+  });
+}
+
+async function driveLoadFile(){
+  wnote('Buscando tu archivo en Google Drive…');
+  useDrive=true;
+  fileName='Google Drive · '+DRIVE_FILE_NAME;
+  try{
+    const q=encodeURIComponent(`name='${DRIVE_FILE_NAME}' and trashed=false`);
+    const res=await fetch(`https://www.googleapis.com/drive/v3/files?q=${q}&spaces=drive&fields=files(id,name)`,
+      {headers:{Authorization:'Bearer '+gToken}});
+    if(!res.ok)throw new Error('No se pudo buscar en Drive ('+res.status+')');
+    const data=await res.json();
+    if(data.files&&data.files.length>0){
+      driveFileId=data.files[0].id;
+      localStorage.setItem('drv_fid_'+SK,driveFileId);
+      const fres=await fetch(`https://www.googleapis.com/drive/v3/files/${driveFileId}?alt=media`,
+        {headers:{Authorization:'Bearer '+gToken}});
+      if(!fres.ok)throw new Error('No se pudo leer el archivo ('+fres.status+')');
+      const text=await fres.text();
+      if(isProtected(text)){
+        pendingEnc=JSON.parse(text).data;
+        showStep(3);
+        setTimeout(()=>document.getElementById('p3').focus(),100);
+      }else{
+        try{S.exps=JSON.parse(text);}catch{S.exps=[];}
+        start();
+      }
+    }else{
+      driveFileId=null;
+      S.exps=[];
+      showStep(2);
+    }
+  }catch(e){
+    useDrive=false;fileName='';
+    wnote('Error al acceder a Google Drive: '+e.message);
+  }
+}
+
+async function driveWrite(content){
+  if(!await driveEnsureToken())return false;
+  try{
+    if(driveFileId){
+      const res=await fetch(
+        `https://www.googleapis.com/upload/drive/v3/files/${driveFileId}?uploadType=media`,
+        {method:'PATCH',headers:{Authorization:'Bearer '+gToken,'Content-Type':'application/json'},body:content});
+      if(!res.ok)throw new Error('HTTP '+res.status);
+    }else{
+      const boundary='xCJk9_boundary_2024';
+      const meta=JSON.stringify({name:DRIVE_FILE_NAME,mimeType:'application/json'});
+      const body=`--${boundary}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n${meta}\r\n--${boundary}\r\nContent-Type: application/json\r\n\r\n${content}\r\n--${boundary}--`;
+      const res=await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart',
+        {method:'POST',headers:{Authorization:'Bearer '+gToken,'Content-Type':'multipart/related; boundary='+boundary},body});
+      if(!res.ok)throw new Error('HTTP '+res.status);
+      const d=await res.json();
+      driveFileId=d.id;
+      localStorage.setItem('drv_fid_'+SK,driveFileId);
+    }
+    return true;
+  }catch(e){
+    showToast('Error al guardar en Google Drive: '+e.message,true);
+    return false;
+  }
+}
 
 // ── Welcome screen helpers ──
 function showStep(n){[1,2,3,4].forEach(i=>document.getElementById('ws'+i).style.display=i===n?'block':'none');}
@@ -396,7 +505,9 @@ async function writeDisk(){
     return false;
   }
 
-  if(fileHandle){
+  if(useDrive){
+    return await driveWrite(content);
+  } else if(fileHandle){
     const ok=await ensureWritePerm();
     if(!ok){
       showToast('Permiso de escritura denegado. Vuelve a abrir el archivo.',true);
@@ -497,7 +608,7 @@ function showDet(id){S.det=S.exps.find(e=>e.id===id)||null;S.view='detalle';rend
 function goNew(){S.form={...EF};S.editId=null;S.view='form';render();}
 async function manualSave(){
   const ok=await writeDisk();
-  if(ok)showToast('✓ Guardado correctamente en '+fileName);
+  if(ok)showToast('✓ Guardado correctamente en '+(useDrive?'Google Drive':fileName));
 }
 
 // Normalize string for fuzzy matching (lowercase, no accents, no punctuation)
@@ -1035,8 +1146,8 @@ function rHdr(){
       </div>
       <div class="file-bar">
         <div class="dot dot-green"></div>
-        <span style="color:#a5f3c7;font-weight:700">${esc(fileName)}</span>
-        <span style="margin-left:6px;opacity:.6">${appPassword?'🔐 Cifrado con AES-256':fileHandle?'· Sin protección de contraseña':''}</span>
+        <span style="color:#a5f3c7;font-weight:700">${useDrive?'📂 ':esc(fileName)?'':''}${esc(fileName)}</span>
+        <span style="margin-left:6px;opacity:.6">${appPassword?'🔐 Cifrado con AES-256':fileHandle?'· Sin protección de contraseña':useDrive&&!appPassword?'· Sin protección de contraseña':''}</span>
         <button onclick="openSecurityPanel()" style="margin-left:auto;background:none;border:1px solid rgba(255,255,255,0.2);border-radius:7px;padding:2px 10px;font-size:10px;font-weight:700;color:${appPassword?'#86efac':'#fca5a5'};cursor:pointer;font-family:inherit">${appPassword?'🔐 Contraseña activa':'⚠ Sin contraseña'}</button>
       </div>
       <div class="nav">${ns.map(([id,l])=>`<button class="${S.view===id||(id==='form'&&S.view==='form')?'active':''}" onclick="${id==='form'?'goNew()':'sv(\''+id+'\')'}">${l}</button>`).join('')}</div>
