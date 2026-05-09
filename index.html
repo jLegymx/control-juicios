@@ -1,0 +1,1313 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sistema de Control de Juicios</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,-apple-system,sans-serif;background:#f8fafc;color:#1e293b;min-height:100vh}
+.header{background:#0f2044;color:white;position:sticky;top:0;z-index:50}
+.header-top{padding:12px 20px;display:flex;align-items:center;gap:12px}
+.logo{width:36px;height:36px;border-radius:9px;background:#d4a017;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0}
+.nav{display:flex;border-top:1px solid rgba(255,255,255,0.1);padding:0 20px}
+.nav button{padding:9px 14px;font-size:11px;font-weight:700;background:none;border:none;color:#93c5fd;cursor:pointer;border-bottom:2px solid transparent;font-family:inherit}
+.nav button.active{color:#fbbf24;border-bottom-color:#fbbf24}
+.nav button:hover:not(.active){color:white}
+.main{padding:20px;max-width:1200px;margin:0 auto}
+.card{background:white;border-radius:12px;border:1px solid #f1f5f9;padding:20px}
+.tbl{width:100%;border-collapse:collapse;font-size:11px}
+.tbl th{background:#0f2044;color:white;padding:9px 10px;text-align:left;font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;white-space:nowrap}
+.tbl td{padding:8px 10px;border-bottom:1px solid #f8fafc;vertical-align:top}
+.tbl tbody tr:nth-child(even) td{background:#fafbfc}
+.tbl tbody tr:hover td{background:#eff6ff}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.span2{grid-column:1/-1}
+.lbl{display:block;font-size:10px;font-weight:800;color:#64748b;text-transform:uppercase;letter-spacing:.07em;margin-bottom:4px}
+input,select,textarea{width:100%;border:1px solid #d1d5db;border-radius:8px;padding:8px 11px;font-size:12px;font-family:inherit;color:#111827;background:white;outline:none}
+input:focus,select:focus,textarea:focus{border-color:#3b82f6;box-shadow:0 0 0 2px rgba(59,130,246,.15)}
+textarea{min-height:70px;resize:vertical}
+.btn{padding:8px 18px;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;transition:opacity .15s}
+.btn:hover{opacity:.88}
+.btn-primary{background:#0f2044;color:white}
+.btn-secondary{background:white;border:1px solid #d1d5db;color:#374151}
+.btn-danger{background:#dc2626;color:white}
+.btn-success{background:#059669;color:white}
+.btn-sm{padding:4px 12px;font-size:11px}
+.st{display:flex;align-items:center;gap:10px;margin:18px 0 10px}
+.st span{font-size:10px;font-weight:900;color:#0f2044;text-transform:uppercase;letter-spacing:.12em;white-space:nowrap}
+.st hr{flex:1;border:none;border-top:1px solid #e2e8f0}
+.dr{display:flex;gap:10px;padding:6px 0;border-bottom:1px solid #f1f5f9}
+.dl{width:190px;flex-shrink:0;font-size:10px;font-weight:800;color:#94a3b8;text-transform:uppercase;letter-spacing:.05em;padding-top:1px}
+.dv{font-size:12px;color:#1e293b;flex:1}
+.badge{display:inline-block;font-size:10px;font-weight:800;padding:3px 10px;border-radius:999px}
+.badge-sm{padding:2px 7px;font-size:9px}
+.toast{padding:10px 20px;font-size:12px;font-weight:700;color:white;display:none}
+.toast-ok{background:#059669}.toast-err{background:#dc2626}.toast-warn{background:#d97706}
+.rtabs{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.rtab{padding:6px 14px;border-radius:9px;font-size:11px;font-weight:800;cursor:pointer;border:1px solid #e2e8f0;background:white;color:#374151;font-family:inherit}
+.rtab.active{background:#0f2044;color:white;border-color:#0f2044}
+.mt-wrap{border-radius:10px;border:1px solid #f1f5f9;overflow:hidden;margin-top:6px;overflow-x:auto}
+.mt{width:100%;border-collapse:collapse;font-size:11px}
+.mt th{background:#f8fafc;padding:6px 10px;text-align:left;font-size:9px;font-weight:800;color:#94a3b8;text-transform:uppercase;white-space:nowrap}
+.mt td{padding:6px 10px;border-top:1px solid #f8fafc;white-space:nowrap}
+.sbar{display:flex;align-items:center;gap:8px;margin-bottom:14px}
+.sbar-line{width:3px;height:22px;background:#d4a017;border-radius:2px}
+.sbar-title{font-weight:900;font-size:15px;color:#0f2044}
+.confirm-box{margin-top:6px;background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:8px 10px}
+.link-btn{background:none;border:none;cursor:pointer;font-family:inherit;font-weight:800}
+.empty{text-align:center;padding:50px}
+.empty-icon{font-size:36px;margin-bottom:10px}
+.file-bar{background:#1e3a5f;padding:5px 20px;display:flex;align-items:center;gap:8px;font-size:10px;color:#93c5fd}
+.dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.dot-green{background:#4ade80}.dot-gray{background:#64748b}
+
+/* Dashboard */
+.dash{background:white;border-radius:14px;border:1px solid #f1f5f9;border-left:4px solid #d4a017;padding:16px 22px;margin-bottom:16px;display:flex;align-items:center;gap:20px;flex-wrap:wrap}
+.dash-info{flex:1;min-width:220px}
+.dash-date{font-size:16px;font-weight:900;color:#0f2044;text-transform:capitalize}
+.dash-rem{font-size:11px;color:#64748b;margin-top:3px;display:flex;align-items:center;gap:6px}
+.dash-metrics{display:flex;gap:8px;flex-wrap:wrap}
+.metric{padding:9px 14px;border-radius:10px;min-width:78px;text-align:center;border:1px solid transparent}
+.metric-num{font-size:18px;font-weight:900;line-height:1}
+.metric-lbl{font-size:8px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;margin-top:3px;opacity:.85}
+.m-urg{background:#fee2e2;color:#991b1b;border-color:#fecaca}
+.m-urg.zero{background:#f8fafc;color:#94a3b8;border-color:#f1f5f9}
+.m-today{background:#fef3c7;color:#92400e;border-color:#fde68a}
+.m-today.zero{background:#f8fafc;color:#94a3b8;border-color:#f1f5f9}
+.m-week{background:#dbeafe;color:#1e40af;border-color:#bfdbfe}
+.m-total{background:#f1f5f9;color:#0f2044;border-color:#e2e8f0}
+
+/* Priority badges */
+.prio{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:800;padding:3px 9px;border-radius:999px;white-space:nowrap}
+.prio-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.prio-bar{display:inline-block;width:4px;height:18px;border-radius:2px;vertical-align:middle}
+
+/* Welcome */
+#welcome{position:fixed;inset:0;background:#0f2044;display:flex;align-items:center;justify-content:center;z-index:200;padding:20px}
+.wcard{background:white;border-radius:20px;padding:36px;max-width:460px;width:100%;text-align:center}
+.wlogo{width:60px;height:60px;border-radius:14px;background:#d4a017;display:flex;align-items:center;justify-content:center;font-size:28px;margin:0 auto 18px}
+.wtitle{font-size:19px;font-weight:900;color:#0f2044;margin-bottom:8px}
+.wsub{font-size:12px;color:#64748b;margin-bottom:24px;line-height:1.6}
+.wopts{display:flex;flex-direction:column;gap:9px}
+.wbtn{padding:13px 18px;border-radius:11px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;border:1.5px solid transparent;display:flex;align-items:center;gap:10px;text-align:left;transition:opacity .15s}
+.wbtn:hover{opacity:.85}
+.wbtn:disabled{opacity:.35;cursor:not-allowed}
+.wicon{width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0}
+.wb1{background:#eff6ff;color:#1e40af;border-color:#bfdbfe}.wb1 .wicon{background:#dbeafe}
+.wb2{background:#f0fdf4;color:#065f46;border-color:#a7f3d0}.wb2 .wicon{background:#d1fae5}
+.wb3{background:#fafafa;color:#374151;border-color:#e2e8f0}.wb3 .wicon{background:#f1f5f9}
+.wnote{font-size:11px;color:#94a3b8;margin-top:16px;line-height:1.5;min-height:18px}
+</style>
+</head>
+<body>
+
+<div id="welcome">
+  <div class="wcard">
+
+    <!-- Paso 1: Menú principal -->
+    <div id="ws1">
+      <div class="wlogo">⚖</div>
+      <div class="wtitle">Sistema de Control de Juicios</div>
+      <div class="wsub">Los expedientes se guardan en un <strong>archivo en tu computadora</strong>.<br>Puedes guardarlo en OneDrive, Google Drive o donde quieras.</div>
+      <div class="wopts">
+        <button class="wbtn wb1" id="btn-open" onclick="openFile()">
+          <div class="wicon">📂</div>
+          <div><div>Abrir archivo existente</div><div style="font-size:10px;font-weight:400;opacity:.7;margin-top:2px">Carga una base de datos guardada anteriormente</div></div>
+        </button>
+        <button class="wbtn wb2" id="btn-new" onclick="newFile()">
+          <div class="wicon">✨</div>
+          <div><div>Crear nuevo archivo</div><div style="font-size:10px;font-weight:400;opacity:.7;margin-top:2px">Inicia una nueva base de datos vacía</div></div>
+        </button>
+        <button class="wbtn wb3" onclick="useLocal()">
+          <div class="wicon">💾</div>
+          <div><div>Usar almacenamiento del navegador</div><div style="font-size:10px;font-weight:400;opacity:.7;margin-top:2px">Sin archivo externo — puede perderse si limpias el navegador</div></div>
+        </button>
+      </div>
+      <div class="wnote" id="wnote"></div>
+    </div>
+
+    <!-- Paso 2: Establecer contraseña (al crear nuevo archivo) -->
+    <div id="ws2" style="display:none">
+      <div class="wlogo">🔐</div>
+      <div class="wtitle">¿Proteger con contraseña?</div>
+      <div class="wsub">El archivo se cifrará con <strong>AES-256-GCM</strong>. Sin la contraseña correcta, nadie podrá leer los datos aunque obtenga el archivo.</div>
+      <div style="margin-bottom:10px;text-align:left">
+        <label class="lbl" style="display:block;margin-bottom:4px">Contraseña</label>
+        <input type="password" id="p1" placeholder="Mínimo 6 caracteres…" autocomplete="new-password" style="width:100%">
+      </div>
+      <div style="margin-bottom:6px;text-align:left">
+        <label class="lbl" style="display:block;margin-bottom:4px">Confirmar contraseña</label>
+        <input type="password" id="p2" placeholder="Repite la contraseña…" autocomplete="new-password" style="width:100%" onkeydown="if(event.key==='Enter')doSetPassword()">
+      </div>
+      <p id="perr" style="color:#dc2626;font-size:11px;min-height:16px;margin-bottom:12px;text-align:left"></p>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-primary" style="flex:1" onclick="doSetPassword()">🔐 Crear archivo cifrado</button>
+        <button class="btn btn-secondary" style="flex:1" onclick="skipPassword()">Sin protección</button>
+      </div>
+    </div>
+
+    <!-- Paso 3: Ingresar contraseña (al abrir archivo cifrado) -->
+    <div id="ws3" style="display:none">
+      <div class="wlogo">🔑</div>
+      <div class="wtitle">Archivo protegido</div>
+      <div class="wsub">Este archivo está cifrado con AES-256. Ingresa la contraseña para acceder a los expedientes.</div>
+      <div style="margin-bottom:6px;text-align:left">
+        <label class="lbl" style="display:block;margin-bottom:4px">Contraseña</label>
+        <input type="password" id="p3" placeholder="Ingresa tu contraseña…" autocomplete="current-password" style="width:100%" onkeydown="if(event.key==='Enter')doDecrypt()">
+      </div>
+      <p id="derr" style="color:#dc2626;font-size:11px;min-height:16px;margin-bottom:12px;text-align:left"></p>
+      <button class="btn btn-primary" style="width:100%" onclick="doDecrypt()">🔓 Abrir</button>
+    </div>
+
+    <!-- Paso 4: Cambiar contraseña (desde dentro de la app) -->
+    <div id="ws4" style="display:none">
+      <div class="wlogo">⚙️</div>
+      <div class="wtitle" id="ws4title">Cambiar contraseña</div>
+      <div class="wsub" id="ws4sub">Ingresa la contraseña actual y la nueva para actualizar la protección.</div>
+      <div id="ws4body" style="text-align:left">
+        <div style="margin-bottom:10px">
+          <label class="lbl" style="display:block;margin-bottom:4px" id="ws4lbl1">Contraseña actual</label>
+          <input type="password" id="p4old" placeholder="Contraseña actual…" autocomplete="current-password" style="width:100%">
+        </div>
+        <div style="margin-bottom:10px">
+          <label class="lbl" style="display:block;margin-bottom:4px">Nueva contraseña</label>
+          <input type="password" id="p4new" placeholder="Nueva contraseña…" autocomplete="new-password" style="width:100%">
+        </div>
+        <div style="margin-bottom:6px">
+          <label class="lbl" style="display:block;margin-bottom:4px">Confirmar nueva contraseña</label>
+          <input type="password" id="p4conf" placeholder="Confirmar nueva contraseña…" autocomplete="new-password" style="width:100%">
+        </div>
+      </div>
+      <p id="perr2" style="color:#dc2626;font-size:11px;min-height:16px;margin-bottom:12px;text-align:left"></p>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-primary" style="flex:1" id="ws4btn" onclick="doChangePassword()">Cambiar contraseña</button>
+        <button class="btn btn-secondary" onclick="closeSecurityPanel()">Cancelar</button>
+      </div>
+      <div id="removePwdBtn" style="margin-top:10px;text-align:center">
+        <button onclick="doRemovePassword()" style="background:none;border:none;color:#ef4444;font-size:11px;font-weight:700;cursor:pointer;text-decoration:underline;font-family:inherit">Quitar protección del archivo</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+<input type="file" id="importFile" accept=".xlsx,.xls" style="display:none" onchange="importFromExcel(this.files[0]);this.value=''">
+<div id="hdr" style="display:none"></div>
+<div id="main" class="main" style="display:none"></div>
+
+<script>
+const SK='juicios_v4';
+const ESTATUS=['En trámite','Sentencia favorable','Sentencia desfavorable','Sobreseído','Desistido','En cumplimiento','Cumplimentado','En revisión'];
+const TRAMITE=['Juicio de Amparo','Juicio Contencioso Administrativo','Recurso de Revisión','Recurso de Inconformidad','Otro'];
+const SUSP=['Sí','No','En trámite'];
+const TIPO_JUICIO=['Juicio de Nulidad','Juicio Agrario','Juicio Laboral'];
+const TJ_COLORS={'Juicio de Nulidad':{bg:'#fef3c7',c:'#92400e'},'Juicio Agrario':{bg:'#d1fae5',c:'#065f46'},'Juicio Laboral':{bg:'#ede9fe',c:'#5b21b6'}};
+const PRIORIDAD=[
+  {v:'urgente',l:'🔴 Urgente',c:'#dc2626',bg:'#fee2e2'},
+  {v:'alta',l:'🟠 Alta',c:'#ea580c',bg:'#ffedd5'},
+  {v:'normal',l:'🔵 Normal',c:'#2563eb',bg:'#dbeafe'},
+  {v:'baja',l:'⚪ Baja',c:'#64748b',bg:'#f1f5f9'}
+];
+const PR_MAP=Object.fromEntries(PRIORIDAD.map(p=>[p.v,p]));
+const EF={numeroJuicio:'',numeroExpedienteInterno:'',demandante:'',sala:'',unidadAdministrativa:'',actoImpugnado:'',tituloConcesion:'',numeroExpedienteAdministrativo:'',tipoJuicio:'',tipoTramite:'',autoridadDemandada:'',autoridadVinculada:'',fechaEmplazamiento:'',suspension:'No',fechaNotificacionSuspension:'',efectosSuspension:'',fechaSentencia:'',estatus:'En trámite',fechaEstatus:'',numeroRequerimientos:'',numeroApercibimientos:'',fechaUltimoApercibimiento:'',abogadoResponsable:'',fechaProximaAudiencia:'',notas:'',prioridad:'normal'};
+const SC={'En trámite':{bg:'#dbeafe',c:'#1e40af'},'Sentencia favorable':{bg:'#d1fae5',c:'#065f46'},'Sentencia desfavorable':{bg:'#fee2e2',c:'#991b1b'},'Sobreseído':{bg:'#f1f5f9',c:'#475569'},'Desistido':{bg:'#f8fafc',c:'#64748b'},'En cumplimiento':{bg:'#fef3c7',c:'#92400e'},'Cumplimentado':{bg:'#ccfbf1',c:'#065f46'},'En revisión':{bg:'#ede9fe',c:'#5b21b6'}};
+
+let fileHandle=null, useLS=false, fileName='', appPassword=null, pendingEnc=null;
+let S={view:'lista',exps:[],form:{...EF},editId:null,sq:'',srs:[],sdone:false,rep:'estatus',delC:null,lf:'',det:null,sortBy:'reg-desc'};
+
+const fsOk='showOpenFilePicker' in window;
+
+// ── AES-256-GCM Encryption (Web Crypto API, no external library) ──
+async function deriveKey(pass, salt){
+  const km=await crypto.subtle.importKey('raw',new TextEncoder().encode(pass),'PBKDF2',false,['deriveKey']);
+  return crypto.subtle.deriveKey({name:'PBKDF2',salt,iterations:310000,hash:'SHA-256'},km,{name:'AES-GCM',length:256},false,['encrypt','decrypt']);
+}
+async function encryptJSON(data, pass){
+  const salt=crypto.getRandomValues(new Uint8Array(16));
+  const iv=crypto.getRandomValues(new Uint8Array(12));
+  const key=await deriveKey(pass,salt);
+  const ct=await crypto.subtle.encrypt({name:'AES-GCM',iv},key,new TextEncoder().encode(JSON.stringify(data)));
+  const out=new Uint8Array(28+ct.byteLength);
+  out.set(salt);out.set(iv,16);out.set(new Uint8Array(ct),28);
+  let bin='';for(let i=0;i<out.length;i++)bin+=String.fromCharCode(out[i]);
+  return btoa(bin);
+}
+async function decryptJSON(b64, pass){
+  const bin=Uint8Array.from(atob(b64),c=>c.charCodeAt(0));
+  const key=await deriveKey(pass,bin.slice(0,16));
+  const pt=await crypto.subtle.decrypt({name:'AES-GCM',iv:bin.slice(16,28)},key,bin.slice(28));
+  return JSON.parse(new TextDecoder().decode(pt));
+}
+function isProtected(text){try{const o=JSON.parse(text);return o&&o.protected===true&&o.data;}catch{return false;}}
+
+// ── Welcome screen helpers ──
+function showStep(n){[1,2,3,4].forEach(i=>document.getElementById('ws'+i).style.display=i===n?'block':'none');}
+function wnote(t){document.getElementById('wnote').textContent=t;}
+
+// ── File open / create / local ──
+async function openFile(){
+  if(!fsOk){wnote('Tu navegador no soporta archivos externos. Usa Chrome o Edge.');return;}
+  try{
+    [fileHandle]=await window.showOpenFilePicker({types:[{description:'Datos de juicios',accept:{'application/json':['.json']}}],multiple:false});
+    const f=await fileHandle.getFile(); fileName=f.name;
+    const text=await f.text();
+    if(isProtected(text)){
+      pendingEnc=JSON.parse(text).data;
+      showStep(3);
+      setTimeout(()=>document.getElementById('p3').focus(),100);
+    } else {
+      try{S.exps=JSON.parse(text);}catch{S.exps=[];}
+      start();
+    }
+  }catch(e){if(e.name!=='AbortError')wnote('No se pudo abrir el archivo. Intenta de nuevo.');}
+}
+
+async function newFile(){
+  if(!fsOk){wnote('Tu navegador no soporta archivos externos. Usa Chrome o Edge.');return;}
+  try{
+    fileHandle=await window.showSaveFilePicker({suggestedName:'expedientes-juicios.json',types:[{description:'Datos de juicios',accept:{'application/json':['.json']}}]});
+    fileName=(await fileHandle.getFile()).name;
+    S.exps=[];
+    showStep(2);
+    setTimeout(()=>document.getElementById('p1').focus(),100);
+  }catch(e){if(e.name!=='AbortError')wnote('No se pudo crear el archivo. Intenta de nuevo.');}
+}
+
+function useLocal(){
+  useLS=true; fileName='Almacenamiento del navegador';
+  try{
+    const v=localStorage.getItem(SK);
+    if(v&&isProtected(v)){
+      pendingEnc=JSON.parse(v).data;
+      showStep(3);
+      setTimeout(()=>document.getElementById('p3').focus(),100);
+      return;
+    }
+    S.exps=v?JSON.parse(v):[];
+  }catch{S.exps=[];}
+  start();
+}
+
+// ── Password step handlers ──
+async function doSetPassword(){
+  const p1=document.getElementById('p1').value;
+  const p2=document.getElementById('p2').value;
+  const err=document.getElementById('perr');
+  if(!p1){err.textContent='La contraseña no puede estar vacía.';return;}
+  if(p1.length<6){err.textContent='Mínimo 6 caracteres.';return;}
+  if(p1!==p2){err.textContent='Las contraseñas no coinciden.';return;}
+  err.textContent='Cifrando…';
+  appPassword=p1;
+  await writeDisk();
+  start();
+}
+
+function skipPassword(){
+  appPassword=null;
+  writeDisk();
+  start();
+}
+
+async function doDecrypt(){
+  const pass=document.getElementById('p3').value;
+  const err=document.getElementById('derr');
+  if(!pass){err.textContent='Ingresa la contraseña.';return;}
+  err.textContent='Descifrando…';
+  try{
+    S.exps=await decryptJSON(pendingEnc,pass);
+    appPassword=pass; pendingEnc=null;
+    start();
+  }catch{
+    err.textContent='❌ Contraseña incorrecta. Intenta de nuevo.';
+    document.getElementById('p3').value='';
+    document.getElementById('p3').focus();
+  }
+}
+
+// ── In-app password management ──
+function openSecurityPanel(){
+  document.getElementById('ws4title').textContent=appPassword?'Cambiar contraseña':'Activar protección con contraseña';
+  document.getElementById('ws4sub').textContent=appPassword?'Ingresa la contraseña actual y la nueva para actualizar la protección del archivo.':'Establece una contraseña para cifrar el archivo con AES-256.';
+  document.getElementById('ws4lbl1').textContent=appPassword?'Contraseña actual':'(sin contraseña actual)';
+  document.getElementById('p4old').style.display=appPassword?'block':'none';
+  document.getElementById('p4old').value='';
+  document.getElementById('p4new').value='';
+  document.getElementById('p4conf').value='';
+  document.getElementById('perr2').textContent='';
+  document.getElementById('welcome').style.display='flex';
+  showStep(4);
+}
+
+function closeSecurityPanel(){
+  document.getElementById('welcome').style.display='none';
+}
+
+async function doChangePassword(){
+  const pOld=document.getElementById('p4old').value;
+  const pNew=document.getElementById('p4new').value;
+  const pConf=document.getElementById('p4conf').value;
+  const err=document.getElementById('perr2');
+  if(appPassword&&pOld!==appPassword){err.textContent='La contraseña actual es incorrecta.';return;}
+  if(!pNew){err.textContent='La nueva contraseña no puede estar vacía.';return;}
+  if(pNew.length<6){err.textContent='Mínimo 6 caracteres.';return;}
+  if(pNew!==pConf){err.textContent='Las contraseñas nuevas no coinciden.';return;}
+  err.textContent='Guardando…';
+  appPassword=pNew;
+  await writeDisk();
+  closeSecurityPanel();
+  showToast('Contraseña actualizada y archivo re-cifrado');
+}
+
+async function doRemovePassword(){
+  if(!confirm('¿Quitar la protección? El archivo se guardará en texto plano.'))return;
+  appPassword=null;
+  await writeDisk();
+  closeSecurityPanel();
+  showToast('Protección eliminada. El archivo ya no está cifrado.',false,true);
+}
+
+// ── Write to disk (with optional encryption) ──
+async function ensureWritePerm(){
+  if(!fileHandle)return false;
+  if(!fileHandle.queryPermission)return true;
+  try{
+    const opts={mode:'readwrite'};
+    let p=await fileHandle.queryPermission(opts);
+    if(p==='granted')return true;
+    p=await fileHandle.requestPermission(opts);
+    return p==='granted';
+  }catch{return true;}
+}
+
+async function writeDisk(){
+  let content;
+  try{
+    if(appPassword){
+      const enc=await encryptJSON(S.exps,appPassword);
+      content=JSON.stringify({protected:true,v:1,data:enc});
+    } else {
+      content=JSON.stringify(S.exps,null,2);
+    }
+  }catch(e){
+    showToast('Error al preparar datos: '+e.message,true);
+    return false;
+  }
+
+  if(fileHandle){
+    const ok=await ensureWritePerm();
+    if(!ok){
+      showToast('Permiso de escritura denegado. Vuelve a abrir el archivo.',true);
+      return false;
+    }
+    try{
+      const w=await fileHandle.createWritable();
+      await w.write(content);
+      await w.close();
+      return true;
+    }catch(e){
+      showToast('Error al guardar en el archivo: '+e.message,true);
+      return false;
+    }
+  } else if(useLS){
+    try{
+      localStorage.setItem(SK,content);
+      return true;
+    }catch(e){
+      showToast('Error al guardar: '+e.message,true);
+      return false;
+    }
+  }
+  showToast('No hay archivo ni almacenamiento seleccionado. Recarga la página.',true);
+  return false;
+}
+
+function start(){
+  document.getElementById('welcome').style.display='none';
+  document.getElementById('hdr').style.display='block';
+  document.getElementById('main').style.display='block';
+  render();
+}
+
+const fd=d=>d?new Date(d+'T00:00:00').toLocaleDateString('es-MX',{day:'2-digit',month:'long',year:'numeric'}):'—';
+const esc=s=>String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const bdg=(s,sm)=>{const c=SC[s]||{bg:'#f1f5f9',c:'#64748b'};return`<span class="badge${sm?' badge-sm':''}" style="background:${c.bg};color:${c.c}">${esc(s)||'—'}</span>`;};
+const prBdg=(p)=>{const x=PR_MAP[p||'normal'];return`<span class="prio" style="background:${x.bg};color:${x.c}"><span class="prio-dot" style="background:${x.c}"></span>${x.l.replace(/^[^\s]+\s/,'')}</span>`;};
+const prBar=(p)=>{const x=PR_MAP[p||'normal'];return`<span class="prio-bar" style="background:${x.c}" title="${x.l}"></span>`;};
+const tjBdg=(t,sm)=>{if(!t)return'<span style="color:#cbd5e1;font-size:10px">—</span>';const c=TJ_COLORS[t]||{bg:'#f1f5f9',c:'#475569'};return`<span class="badge${sm?' badge-sm':''}" style="background:${c.bg};color:${c.c}">${esc(t)}</span>`;};
+const secT=t=>`<div class="st"><span>${t}</span><hr></div>`;
+const fRow=(l,v)=>`<div class="dr"><div class="dl">${l}</div><div class="dv">${esc(v)||'—'}</div></div>`;
+const lbl=(t,req)=>`<label class="lbl">${t}${req?'<span style="color:red;margin-left:2px">*</span>':''}</label>`;
+const fld=(l,h,req,span)=>`<div${span?' class="span2"':''}>${lbl(l,req)}${h}</div>`;
+const inp=(k,pl)=>`<input value="${esc(S.form[k]||'')}" placeholder="${pl||''}" oninput="sf('${k}',this.value)">`;
+const di=k=>`<input type="date" value="${esc(S.form[k]||'')}" oninput="sf('${k}',this.value)">`;
+const sl=(k,arr,ph)=>`<select onchange="sf('${k}',this.value)">${ph?'<option value="">Seleccionar…</option>':''}${arr.map(o=>`<option value="${esc(o)}"${S.form[k]===o?' selected':''}>${esc(o)}</option>`).join('')}</select>`;
+
+function showToast(m,err){const t=document.getElementById('toast');t.textContent=(err?'✕ ':'✓ ')+m;t.className='toast '+(err?'toast-err':'toast-ok');t.style.display='block';setTimeout(()=>t.style.display='none',3500);}
+function sf(k,v){S.form[k]=v;if(k==='suspension')render();}
+function sv(v){S.delC=null;S.view=v;render();}
+
+async function doSave(){
+  if(!S.form.numeroJuicio.trim())return showToast('El número de juicio es obligatorio',true);
+  const wasEdit=!!S.editId;
+  // Save state in case we need to roll back
+  const prevExps=[...S.exps];
+  if(S.editId){
+    S.exps=S.exps.map(e=>e.id===S.editId?{...S.form,id:S.editId}:e);
+  } else {
+    if(S.exps.find(e=>e.numeroJuicio.trim().toLowerCase()===S.form.numeroJuicio.trim().toLowerCase()))
+      return showToast('Ya existe un expediente con ese número',true);
+    S.exps.push({...S.form,id:Date.now().toString()});
+  }
+  const ok=await writeDisk();
+  if(!ok){
+    // Roll back
+    S.exps=prevExps;
+    return; // writeDisk already showed an error toast
+  }
+  showToast(wasEdit?'✓ Expediente actualizado y guardado correctamente':'✓ Expediente registrado y guardado correctamente');
+  S.form={...EF};S.editId=null;S.view='lista';render();
+}
+function doEdit(id){const e=S.exps.find(x=>x.id===id);if(!e)return;S.form={...e};S.editId=id;S.det=null;S.view='form';render();}
+async function doDel(id){
+  const prevExps=[...S.exps];
+  S.exps=S.exps.filter(e=>e.id!==id);
+  const ok=await writeDisk();
+  if(!ok){S.exps=prevExps;return;}
+  S.delC=null;
+  if(S.det?.id===id){S.det=null;S.view='lista';}
+  showToast('✓ Expediente eliminado y guardado');
+  render();
+}
+function doSearch(){
+  const q=S.sq.trim().toLowerCase();
+  if(!q){S.sdone=false;S.srs=[];render();return;}
+  S.sdone=true;
+  S.srs=S.exps.filter(e=>{
+    const num=(e.numeroJuicio||'').toLowerCase();
+    const dem=(e.demandante||'').toLowerCase();
+    const cna=(e.numeroExpedienteInterno||'').toLowerCase();
+    return num.includes(q)||dem.includes(q)||cna.includes(q);
+  });
+  render();
+}
+function showDet(id){S.det=S.exps.find(e=>e.id===id)||null;S.view='detalle';render();}
+function goNew(){S.form={...EF};S.editId=null;S.view='form';render();}
+async function manualSave(){
+  const ok=await writeDisk();
+  if(ok)showToast('✓ Guardado correctamente en '+fileName);
+}
+
+// Normalize string for fuzzy matching (lowercase, no accents, no punctuation)
+function normStr(s){return String(s??'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]/g,'').trim();}
+
+function getCellVal(cell){
+  if(!cell||cell.value==null)return '';
+  let v=cell.value;
+  if(v instanceof Date)return v;
+  if(typeof v==='object'){
+    // Rich text
+    if(Array.isArray(v.richText))return v.richText.map(r=>r.text||'').join('');
+    // Formula result
+    if(v.result!=null)return v.result;
+    // Hyperlink
+    if(v.text!=null)return v.text;
+    if(v.hyperlink)return v.hyperlink;
+    // Error cell
+    if(v.error)return '';
+  }
+  return v;
+}
+
+function parseDateFlex(v){
+  if(!v)return '';
+  if(v instanceof Date && !isNaN(v))return v.toISOString().slice(0,10);
+  const s=String(v).trim();
+  if(/^\d{4}-\d{2}-\d{2}$/.test(s))return s;
+  let m=s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/);
+  if(m){const[_,d,mo,y]=m;return `${y}-${mo.padStart(2,'0')}-${d.padStart(2,'0')}`;}
+  m=s.match(/^(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})$/);
+  if(m){const[_,y,mo,d]=m;return `${y}-${mo.padStart(2,'0')}-${d.padStart(2,'0')}`;}
+  try{const d=new Date(s);if(!isNaN(d.getTime()))return d.toISOString().slice(0,10);}catch{}
+  return '';
+}
+
+// ── Field mapping dictionary (for auto-detecting columns) ──
+const FM={
+  // N° de Juicio — multiple normalizations
+  numerodejuicio:'numeroJuicio',numerojuicio:'numeroJuicio',ndejuicio:'numeroJuicio',
+  njuicio:'numeroJuicio',nodejuicio:'numeroJuicio',numjuicio:'numeroJuicio',juicio:'numeroJuicio',
+  // N° Expediente Interno / CNA
+  nexpinternocna:'numeroExpedienteInterno',nexpedienteinternocna:'numeroExpedienteInterno',
+  nexpinterno:'numeroExpedienteInterno',expedienteinterno:'numeroExpedienteInterno',
+  nexpinternovna:'numeroExpedienteInterno',expinternocna:'numeroExpedienteInterno',
+  cna:'numeroExpedienteInterno',vna:'numeroExpedienteInterno',
+  // Demandante
+  demandante:'demandante',actor:'demandante',
+  // Sala
+  sala:'sala',
+  // Unidad Administrativa
+  unidadadministrativa:'unidadAdministrativa',uadmva:'unidadAdministrativa',
+  // Acto Impugnado
+  actoimpugnado:'actoImpugnado',
+  // Título de Concesión
+  tituloconcesion:'tituloConcesion',titulodeconcesion:'tituloConcesion',
+  // N° Exp. Administrativo
+  nexpadmvodaa:'numeroExpedienteAdministrativo',nexpadmvo:'numeroExpedienteAdministrativo',
+  nexpedienteadministrativo:'numeroExpedienteAdministrativo',nexpadministrativodaa:'numeroExpedienteAdministrativo',
+  // Tipo de Juicio
+  tipodejuicio:'tipoJuicio',tipojuicio:'tipoJuicio',
+  // Tipo de Trámite
+  tipodetramite:'tipoTramite',tipotramite:'tipoTramite',tramite:'tipoTramite',
+  // Autoridades
+  autoridaddemandada:'autoridadDemandada',
+  autoridadvinculada:'autoridadVinculada',
+  // Abogado
+  abogadoresponsable:'abogadoResponsable',abogado:'abogadoResponsable',responsable:'abogadoResponsable',
+  // Fechas
+  fechadeemplazamiento:'fechaEmplazamiento',femplazamiento:'fechaEmplazamiento',
+  fechaemplazamiento:'fechaEmplazamiento',emplazamiento:'fechaEmplazamiento',
+  fechadeproximaaudiencia:'fechaProximaAudiencia',fproxaudiencia:'fechaProximaAudiencia',
+  fechaproximaaudiencia:'fechaProximaAudiencia',proximaaudiencia:'fechaProximaAudiencia',audiencia:'fechaProximaAudiencia',
+  fechadesentencia:'fechaSentencia',fsentencia:'fechaSentencia',fechasentencia:'fechaSentencia',sentencia:'fechaSentencia',
+  // Suspensión
+  suspension:'suspension',
+  fechadenotificaciondesuspension:'fechaNotificacionSuspension',
+  fnotificacionsuspension:'fechaNotificacionSuspension',
+  fnotifsuspension:'fechaNotificacionSuspension',
+  fechanotificacionsuspension:'fechaNotificacionSuspension',
+  notificacionsuspension:'fechaNotificacionSuspension',
+  efectosdelasuspension:'efectosSuspension',efectossuspension:'efectosSuspension',efectos:'efectosSuspension',
+  // Estatus
+  estatus:'estatus',estado:'estatus',status:'estatus',
+  fechadeestatus:'fechaEstatus',festatus:'fechaEstatus',fechaestatus:'fechaEstatus',
+  // Requerimientos y Apercibimientos
+  nrequerimientos:'numeroRequerimientos',numerorequerimientos:'numeroRequerimientos',
+  nrequerimientosdecumplimiento:'numeroRequerimientos',requerimientos:'numeroRequerimientos',
+  napercibimientos:'numeroApercibimientos',numeroapercibimientos:'numeroApercibimientos',apercibimientos:'numeroApercibimientos',
+  fultimoapercibimiento:'fechaUltimoApercibimiento',fechadelultimoapercibimiento:'fechaUltimoApercibimiento',
+  fechaultimoapercibimiento:'fechaUltimoApercibimiento',ultimoapercibimiento:'fechaUltimoApercibimiento',
+  // Notas
+  notas:'notas',notasyobservaciones:'notas',observaciones:'notas',notasobservaciones:'notas',comentarios:'notas',
+  // Prioridad
+  prioridad:'prioridad',urgencia:'prioridad'
+};
+
+// System fields definition for mapper UI
+const SYS_FIELDS=[
+  {k:'numeroJuicio',l:'N° de Juicio',req:true},
+  {k:'tipoJuicio',l:'Tipo de Juicio'},
+  {k:'numeroExpedienteInterno',l:'N° Exp. Interno / CNA'},
+  {k:'demandante',l:'Demandante'},
+  {k:'sala',l:'Sala'},
+  {k:'unidadAdministrativa',l:'Unidad Administrativa'},
+  {k:'actoImpugnado',l:'Acto Impugnado'},
+  {k:'tituloConcesion',l:'Título de Concesión'},
+  {k:'numeroExpedienteAdministrativo',l:'N° Exp. Admvo. (D.A.A.)'},
+  {k:'tipoTramite',l:'Tipo de Trámite'},
+  {k:'autoridadDemandada',l:'Autoridad Demandada'},
+  {k:'autoridadVinculada',l:'Autoridad Vinculada'},
+  {k:'abogadoResponsable',l:'Abogado Responsable'},
+  {k:'fechaEmplazamiento',l:'Fecha de Emplazamiento'},
+  {k:'fechaProximaAudiencia',l:'Fecha de Próxima Audiencia'},
+  {k:'fechaSentencia',l:'Fecha de Sentencia'},
+  {k:'suspension',l:'Suspensión (Sí/No)'},
+  {k:'fechaNotificacionSuspension',l:'F. Notificación Suspensión'},
+  {k:'efectosSuspension',l:'Efectos de la Suspensión'},
+  {k:'estatus',l:'Estatus'},
+  {k:'fechaEstatus',l:'Fecha de Estatus'},
+  {k:'numeroRequerimientos',l:'N° Requerimientos'},
+  {k:'numeroApercibimientos',l:'N° Apercibimientos'},
+  {k:'fechaUltimoApercibimiento',l:'F. Último Apercibimiento'},
+  {k:'notas',l:'Notas y Observaciones'},
+  {k:'prioridad',l:'Prioridad'}
+];
+
+let importData=null; // {headers:[{col,name}], rows:[{col:val}], colMap:{field:col}}
+
+async function importFromExcel(file){
+  if(!file)return;
+  if(typeof ExcelJS==='undefined')return showToast('Función requiere internet. Recarga la página e intenta de nuevo.',true);
+  try{
+    const buf=await file.arrayBuffer();
+    const wb=new ExcelJS.Workbook();
+    await wb.xlsx.load(buf);
+    const ws=wb.worksheets[0];
+    if(!ws)return showToast('El archivo no contiene hojas de cálculo válidas.',true);
+
+    // Find the header row robustly: check first 5 rows, count non-empty cells
+    let hRowNum=1, maxCells=0;
+    for(let r=1;r<=Math.min(5,ws.rowCount);r++){
+      let cnt=0;
+      // Try both eachCell and direct access for robustness
+      ws.getRow(r).eachCell(c=>{ if(String(getCellVal(c)||'').trim())cnt++; });
+      if(!cnt){ // fallback: direct cell access
+        for(let c=1;c<=50;c++){
+          if(String(getCellVal(ws.getRow(r).getCell(c))||'').trim())cnt++;
+          else if(c>5)break;
+        }
+      }
+      if(cnt>maxCells){maxCells=cnt;hRowNum=r;}
+    }
+
+    // Read headers — use eachCell first, fall back to direct cell index access
+    const headers=[];
+    const hRow=ws.getRow(hRowNum);
+    hRow.eachCell((cell,col)=>{
+      const v=String(getCellVal(cell)||'').trim();
+      if(v)headers.push({col,name:v});
+    });
+    // Fallback: if eachCell returned nothing (can happen with styled header rows)
+    if(!headers.length){
+      for(let c=1;c<=50;c++){
+        const v=String(getCellVal(hRow.getCell(c))||'').trim();
+        if(!v&&c>3)break;
+        if(v)headers.push({col:c,name:v});
+      }
+    }
+
+    if(!headers.length)return showToast('No se pudieron leer los encabezados del archivo. Asegúrate que sea un .xlsx válido.',true);
+
+    // Auto-map: match each Excel header to a system field
+    const colMap={};
+    headers.forEach(h=>{
+      const k=normStr(h.name);
+      if(FM[k]&&!colMap[FM[k]])colMap[FM[k]]=h.col;
+    });
+
+    // Read all data rows
+    const rows=[];
+    for(let r=hRowNum+1;r<=ws.rowCount;r++){
+      const rowData={};
+      headers.forEach(h=>{rowData[h.col]=getCellVal(ws.getRow(r).getCell(h.col));});
+      if(Object.values(rowData).some(v=>v!==''&&v!=null))rows.push(rowData);
+    }
+    if(rows.length===0)return showToast('El archivo no tiene filas de datos.',true);
+
+    importData={headers,rows,colMap};
+    S.view='importar';
+    render();
+  }catch(err){
+    showToast('Error al leer el archivo: '+err.message+'. ¿Es un archivo .xlsx válido?',true);
+  }
+}
+
+function rImportar(){
+  if(!importData)return'';
+  const{headers,rows,colMap}=importData;
+  const mapped=Object.keys(colMap).filter(k=>colMap[k]).length;
+  const colOpts='<option value="">— No importar —</option>'+headers.map(h=>`<option value="${h.col}">${esc(h.name)}</option>`).join('');
+  const getOpts=(field)=>colOpts.replace(`value="${colMap[field]||''}"`,`value="${colMap[field]||''}" selected`);
+  return`
+    <div style="max-width:800px;margin:0 auto">
+      <div class="sbar"><div class="sbar-line"></div><span class="sbar-title">Importar desde Excel</span>
+        <span style="font-size:11px;color:#64748b">· ${rows.length} filas encontradas · ${headers.length} columnas detectadas</span>
+      </div>
+
+      <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:12px;padding:14px 18px;margin-bottom:14px;font-size:12px;color:#1e40af;line-height:1.6">
+        <strong>Se detectaron ${headers.length} columnas y se mapearon automáticamente ${mapped}.</strong><br>
+        Revisa el mapeo: el sistema muestra qué columna de tu Excel corresponde a cada campo.
+        Ajusta los que estén en blanco o incorrectos usando los menús desplegables.
+        <strong>Solo "N° de Juicio" es obligatorio.</strong>
+      </div>
+
+      <div class="card" style="padding:0;overflow:hidden">
+        <table style="width:100%;border-collapse:collapse;font-size:12px">
+          <thead>
+            <tr style="background:#0f2044;color:white">
+              <th style="padding:10px 14px;text-align:left;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;width:40%">Campo del sistema</th>
+              <th style="padding:10px 14px;text-align:left;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.05em">Columna de tu Excel</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${SYS_FIELDS.map((f,i)=>{
+              const isMapped=!!colMap[f.k];
+              return`<tr style="border-bottom:1px solid #f8fafc;background:${i%2===0?'white':'#fafbfc'}">
+                <td style="padding:8px 14px">
+                  <span style="font-weight:${f.req?800:600};color:${f.req?'#1e3a5f':'#374151'}">${f.l}</span>
+                  ${f.req?'<span style="color:#dc2626;margin-left:2px;font-size:11px">*</span>':''}
+                </td>
+                <td style="padding:8px 14px">
+                  <select style="width:100%;font-size:11px;border-radius:7px;padding:5px 8px;border:1px solid ${isMapped?'#86efac':'#e2e8f0'};background:${isMapped?'#f0fdf4':'white'};cursor:pointer"
+                    onchange="importData.colMap['${f.k}']=this.value===''?'':parseInt(this.value)||this.value;document.getElementById('importMain').innerHTML=document.getElementById('importMain').innerHTML">
+                    ${getOpts(f.k)}
+                  </select>
+                </td>
+              </tr>`;
+            }).join('')}
+          </tbody>
+        </table>
+        <div style="padding:16px 20px;border-top:1px solid #f1f5f9;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+          <span style="font-size:11px;color:#94a3b8">Columnas en tu archivo: ${headers.map(h=>`<strong>${esc(h.name)}</strong>`).join(', ')}</span>
+          <div style="margin-left:auto;display:flex;gap:8px">
+            <button class="btn btn-secondary" onclick="importData=null;sv('lista')">Cancelar</button>
+            <button class="btn btn-primary" onclick="doImport()">✓ Importar ${rows.length} expedientes</button>
+          </div>
+        </div>
+      </div>
+    </div>`;
+}
+
+async function doImport(){
+  if(!importData)return;
+  const{rows,colMap}=importData;
+  if(!colMap['numeroJuicio'])return showToast('Debes asignar la columna "N° de Juicio" para importar.',true);
+  const dateFields=['fechaEmplazamiento','fechaProximaAudiencia','fechaSentencia','fechaNotificacionSuspension','fechaEstatus','fechaUltimoApercibimiento'];
+  const recs=[];
+  rows.forEach(rowData=>{
+    const rec={...EF};
+    Object.entries(colMap).forEach(([field,col])=>{
+      if(!col&&col!==0)return;
+      let val=rowData[col];
+      if(val==null||val==='')return;
+      if(dateFields.includes(field)){val=parseDateFlex(val);}
+      else{val=String(val).trim();}
+      if(field==='suspension'){
+        const l=val.toLowerCase();
+        if(l==='si'||l==='sí'||l==='yes'||l==='1')val='Sí';
+        else if(l==='no'||l==='false'||l==='0')val='No';
+        else if(l.includes('tramite')||l.includes('trámite'))val='En trámite';
+      }
+      if(field==='estatus'){const f=ESTATUS.find(e=>normStr(e)===normStr(val));if(f)val=f;}
+      if(field==='tipoJuicio'){
+        const nv=normStr(val);
+        if(nv.includes('nulidad'))val='Juicio de Nulidad';
+        else if(nv.includes('agrari'))val='Juicio Agrario';
+        else if(nv.includes('laboral'))val='Juicio Laboral';
+      }
+      if(field==='tipoTramite'){const f=TRAMITE.find(t=>normStr(t)===normStr(val));if(f)val=f;}
+      if(field==='prioridad'){
+        const nv=normStr(val);
+        if(nv.includes('urgente'))val='urgente';
+        else if(nv.includes('alta'))val='alta';
+        else if(nv.includes('baja'))val='baja';
+        else val='normal';
+      }
+      if(val!=='')rec[field]=val;
+    });
+    if(rec.numeroJuicio)recs.push(rec);
+  });
+  if(recs.length===0)return showToast('No se encontraron filas con N° de Juicio válido.',true);
+  const existing=new Set(S.exps.map(e=>e.numeroJuicio.trim().toLowerCase()));
+  const newRecs=recs.filter(r=>!existing.has(r.numeroJuicio.trim().toLowerCase()));
+  const dups=recs.length-newRecs.length;
+  if(newRecs.length===0)return showToast('Todos los expedientes del archivo ya existen en la base de datos.',true);
+  let msg=`Se importarán ${newRecs.length} expediente(s) nuevos.`;
+  if(dups>0)msg+=`\n${dups} duplicado(s) se omitirán.`;
+  if(!confirm(msg+'\n\n¿Continuar?'))return;
+  newRecs.forEach((r,i)=>{r.id=(Date.now()+i).toString();r.prioridad=r.prioridad||'normal';S.exps.push(r);});
+  await writeDisk();
+  importData=null;
+  showToast(`Se importaron ${newRecs.length} expediente(s) correctamente`);
+  S.view='lista';
+  render();
+}
+
+function downloadTemplate(){
+  if(typeof ExcelJS==='undefined')return showToast('Requiere internet para generar la plantilla.',true);
+  (async()=>{
+    const wb=new ExcelJS.Workbook();
+    const ws=wb.addWorksheet('Expedientes');
+    const headers=['Numero de Juicio','Tipo de Juicio','Expediente Interno CNA','Demandante','Sala','Unidad Administrativa','Acto Impugnado','Titulo de Concesion','Expediente Administrativo DAA','Tipo de Tramite','Autoridad Demandada','Autoridad Vinculada','Abogado Responsable','Fecha de Emplazamiento','Fecha de Proxima Audiencia','Fecha de Sentencia','Suspension','Fecha Notificacion Suspension','Efectos de la Suspension','Estatus','Fecha de Estatus','Numero Requerimientos','Numero Apercibimientos','Fecha Ultimo Apercibimiento','Notas y Observaciones','Prioridad'];
+    ws.columns=headers.map(h=>({header:h,width:20}));
+    ws.getRow(1).eachCell(cell=>{
+      cell.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FF0F2044'}};
+      cell.font={bold:true,color:{argb:'FFFFFFFF'},size:10};
+      cell.alignment={vertical:'middle',horizontal:'center',wrapText:true};
+    });
+    ws.getRow(1).height=32;
+    // Example row
+    ws.addRow(['123/2024','Juicio de Nulidad','CNA-001','Nombre del demandante','Sala Superior','Dirección General','Acto administrativo...','','','Juicio de Amparo','','','Lic. Apellido','2024-01-15','2024-03-20','','No','','','En trámite','2024-01-15','0','0','','','normal']);
+    ws.getRow(2).font={italic:true,color:{argb:'FF94A3B8'},size:9};
+    const buf=await wb.xlsx.writeBuffer();
+    const blob=new Blob([buf],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');a.href=url;a.download='plantilla-expedientes.xlsx';
+    document.body.appendChild(a);a.click();document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    showToast('Plantilla descargada. Llénala y luego impórtala.');
+  })();
+}
+
+async function exportToExcel(){
+  if(S.exps.length===0)return showToast('No hay expedientes para exportar',true);
+  const today=new Date().toISOString().slice(0,10);
+  const fname=`expedientes-juicios-${today}`;
+  // [header, key, group, width, isDate]
+  const cols=[
+    ['Prioridad','prioridad',0,12],
+    ['N° de Juicio','numeroJuicio',0,15],
+    ['Tipo de Juicio','tipoJuicio',0,18],
+    ['N° Exp. Interno / CNA','numeroExpedienteInterno',0,18],
+    ['Demandante','demandante',0,28],
+    ['Sala','sala',0,16],
+    ['Unidad Administrativa','unidadAdministrativa',0,24],
+    ['Acto Impugnado','actoImpugnado',0,32],
+    ['Título de Concesión','tituloConcesion',0,20],
+    ['N° Exp. Admvo. (D.A.A.)','numeroExpedienteAdministrativo',0,20],
+    ['Tipo de Trámite','tipoTramite',0,24],
+    ['Autoridad Demandada','autoridadDemandada',1,24],
+    ['Autoridad Vinculada','autoridadVinculada',1,24],
+    ['Abogado Responsable','abogadoResponsable',1,22],
+    ['F. Emplazamiento','fechaEmplazamiento',2,15,1],
+    ['F. Próx. Audiencia','fechaProximaAudiencia',2,15,1],
+    ['F. Sentencia','fechaSentencia',2,15,1],
+    ['Suspensión','suspension',3,13],
+    ['F. Notif. Suspensión','fechaNotificacionSuspension',3,15,1],
+    ['Efectos de la Suspensión','efectosSuspension',3,28],
+    ['Estatus','estatus',4,20],
+    ['F. Estatus','fechaEstatus',4,15,1],
+    ['N° Requerimientos','numeroRequerimientos',4,15],
+    ['N° Apercibimientos','numeroApercibimientos',4,15],
+    ['F. Último Apercibimiento','fechaUltimoApercibimiento',4,17,1],
+    ['Notas y Observaciones','notas',5,40]
+  ];
+  const groups=[
+    {name:'IDENTIFICACIÓN',color:'FF1E40AF',light:'FFDBEAFE'},
+    {name:'AUTORIDADES',color:'FF065F46',light:'FFD1FAE5'},
+    {name:'FECHAS',color:'FF92400E',light:'FFFEF3C7'},
+    {name:'SUSPENSIÓN',color:'FFC2410C',light:'FFFED7AA'},
+    {name:'SEGUIMIENTO',color:'FF5B21B6',light:'FFEDE9FE'},
+    {name:'OBSERVACIONES',color:'FF475569',light:'FFF1F5F9'}
+  ];
+  const sCol={
+    'En trámite':{bg:'FFDBEAFE',fg:'FF1E40AF'},
+    'Sentencia favorable':{bg:'FFD1FAE5',fg:'FF065F46'},
+    'Sentencia desfavorable':{bg:'FFFEE2E2',fg:'FF991B1B'},
+    'Sobreseído':{bg:'FFF1F5F9',fg:'FF475569'},
+    'Desistido':{bg:'FFF8FAFC',fg:'FF64748B'},
+    'En cumplimiento':{bg:'FFFEF3C7',fg:'FF92400E'},
+    'Cumplimentado':{bg:'FFCCFBF1',fg:'FF065F46'},
+    'En revisión':{bg:'FFEDE9FE',fg:'FF5B21B6'}
+  };
+
+  if(typeof ExcelJS!=='undefined'){
+    try{
+      const wb=new ExcelJS.Workbook();
+      wb.creator='Sistema de Control de Juicios';
+      wb.created=new Date();
+      const ws=wb.addWorksheet('Expedientes',{
+        views:[{state:'frozen',xSplit:1,ySplit:3}],
+        pageSetup:{orientation:'landscape',fitToPage:true,fitToWidth:1,paperSize:9}
+      });
+      const tb={style:'thin',color:{argb:'FFE2E8F0'}};
+      const cb={top:tb,left:tb,bottom:tb,right:tb};
+
+      // Title row
+      ws.mergeCells(1,1,1,cols.length);
+      const tc=ws.getCell(1,1);
+      tc.value='SISTEMA DE CONTROL DE JUICIOS — Listado General de Expedientes';
+      tc.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FF0F2044'}};
+      tc.font={bold:true,color:{argb:'FFFBBF24'},size:14};
+      tc.alignment={vertical:'middle',horizontal:'center'};
+      ws.getRow(1).height=30;
+
+      // Group header row
+      let cIdx=1;
+      for(let g=0;g<groups.length;g++){
+        const gc=cols.filter(c=>c[2]===g);
+        if(gc.length===0)continue;
+        const sc=cIdx,ec=cIdx+gc.length-1;
+        if(sc!==ec)ws.mergeCells(2,sc,2,ec);
+        const cell=ws.getCell(2,sc);
+        cell.value=groups[g].name;
+        cell.fill={type:'pattern',pattern:'solid',fgColor:{argb:groups[g].light}};
+        cell.font={bold:true,color:{argb:groups[g].color},size:10};
+        cell.alignment={vertical:'middle',horizontal:'center'};
+        cell.border=cb;
+        // Apply border to merged range
+        if(sc!==ec){for(let i=sc+1;i<=ec;i++){const c=ws.getCell(2,i);c.border=cb;c.fill={type:'pattern',pattern:'solid',fgColor:{argb:groups[g].light}};}}
+        cIdx=ec+1;
+      }
+      ws.getRow(2).height=22;
+
+      // Column headers
+      cols.forEach(([h,k,g,w,isDate],i)=>{
+        const cell=ws.getCell(3,i+1);
+        cell.value=h;
+        cell.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FF0F2044'}};
+        cell.font={bold:true,color:{argb:'FFFFFFFF'},size:10};
+        cell.alignment={vertical:'middle',horizontal:'center',wrapText:true};
+        cell.border={
+          top:{style:'thin',color:{argb:'FFFFFFFF'}},
+          left:{style:'thin',color:{argb:'FFFFFFFF'}},
+          bottom:{style:'medium',color:{argb:'FFD4A017'}},
+          right:{style:'thin',color:{argb:'FFFFFFFF'}}
+        };
+        ws.getColumn(i+1).width=w;
+      });
+      ws.getRow(3).height=36;
+
+      // Data rows
+      S.exps.forEach((e,idx)=>{
+        const rn=4+idx;
+        const zb=idx%2===0?'FFFFFFFF':'FFF8FAFC';
+        cols.forEach(([h,k,g,w,isDate],i)=>{
+          const cell=ws.getCell(rn,i+1);
+          const val=e[k];
+          const isNum=k==='numeroRequerimientos'||k==='numeroApercibimientos';
+          if(isDate&&val){
+            cell.value=new Date(val+'T00:00:00');
+            cell.numFmt='dd/mm/yyyy';
+          }else if(isNum&&val!==''&&val!=null){
+            cell.value=Number(val)||0;
+          }else{
+            cell.value=val||'';
+          }
+          cell.fill={type:'pattern',pattern:'solid',fgColor:{argb:zb}};
+          cell.font={size:10,color:{argb:'FF1E293B'}};
+          cell.alignment={vertical:'middle',horizontal:(isDate||isNum)?'center':'left',wrapText:true};
+          cell.border=cb;
+          if(k==='numeroJuicio'){
+            cell.font={size:10,bold:true,color:{argb:'FF1E3A5F'}};
+            cell.alignment={vertical:'middle',horizontal:'left',wrapText:true};
+          }
+          if(k==='prioridad'){
+            const prMap={urgente:{bg:'FFFEE2E2',fg:'FF991B1B',l:'🔴 Urgente'},alta:{bg:'FFFFEDD5',fg:'FF9A3412',l:'🟠 Alta'},normal:{bg:'FFDBEAFE',fg:'FF1E40AF',l:'🔵 Normal'},baja:{bg:'FFF1F5F9',fg:'FF475569',l:'⚪ Baja'}};
+            const pInfo=prMap[val||'normal'];
+            cell.value=pInfo.l;
+            cell.fill={type:'pattern',pattern:'solid',fgColor:{argb:pInfo.bg}};
+            cell.font={size:10,bold:true,color:{argb:pInfo.fg}};
+            cell.alignment={vertical:'middle',horizontal:'center',wrapText:true};
+          }
+          if(k==='tipoJuicio'&&val){
+            const tjMap={'Juicio de Nulidad':{bg:'FFFEF3C7',fg:'FF92400E'},'Juicio Agrario':{bg:'FFD1FAE5',fg:'FF065F46'},'Juicio Laboral':{bg:'FFEDE9FE',fg:'FF5B21B6'}};
+            const tjInfo=tjMap[val];
+            if(tjInfo){
+              cell.fill={type:'pattern',pattern:'solid',fgColor:{argb:tjInfo.bg}};
+              cell.font={size:10,bold:true,color:{argb:tjInfo.fg}};
+              cell.alignment={vertical:'middle',horizontal:'center',wrapText:true};
+            }
+          }
+          if(k==='estatus'&&sCol[val]){
+            cell.fill={type:'pattern',pattern:'solid',fgColor:{argb:sCol[val].bg}};
+            cell.font={size:10,bold:true,color:{argb:sCol[val].fg}};
+            cell.alignment={vertical:'middle',horizontal:'center',wrapText:true};
+          }
+          if(k==='suspension'&&val==='Sí'){
+            cell.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FFFEF3C7'}};
+            cell.font={size:10,bold:true,color:{argb:'FF92400E'}};
+            cell.alignment={vertical:'middle',horizontal:'center',wrapText:true};
+          }
+        });
+        ws.getRow(rn).height=26;
+      });
+
+      // Auto-filter on header row
+      ws.autoFilter={from:{row:3,column:1},to:{row:3+S.exps.length,column:cols.length}};
+
+      const buf=await wb.xlsx.writeBuffer();
+      const blob=new Blob([buf],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+      const url=URL.createObjectURL(blob);
+      const a=document.createElement('a');a.href=url;a.download=fname+'.xlsx';
+      document.body.appendChild(a);a.click();document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showToast('Excel exportado con estilos: '+fname+'.xlsx');
+      return;
+    }catch(err){console.error('Error al exportar:',err);}
+  }
+
+  // CSV fallback
+  const escCSV=v=>{const s=String(v??'');return /[;"\n,]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s;};
+  let csv='\uFEFF'+cols.map(c=>c[0]).join(';')+'\n';
+  S.exps.forEach(e=>{csv+=cols.map(([,k])=>escCSV(e[k])).join(';')+'\n';});
+  const blob=new Blob([csv],{type:'text/csv;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download=fname+'.csv';
+  document.body.appendChild(a);a.click();document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showToast('CSV exportado: '+fname+'.csv (se abre en Excel)');
+}
+
+function rHdr(){
+  const ns=[['lista','▤ Expedientes'],['form','+ Nuevo'],['buscar','⌕ Buscar'],['reportes','◫ Reportes']];
+  document.getElementById('hdr').innerHTML=`
+    <div class="header">
+      <div class="header-top">
+        <div class="logo">⚖</div>
+        <div><div style="font-weight:900;font-size:14px">Sistema de Control de Juicios</div><div style="font-size:10px;color:#93c5fd;margin-top:1px">Organismo Desconcentrado · Administración Pública Federal</div></div>
+        <div style="margin-left:auto;display:flex;align-items:center;gap:12px">
+          <button class="btn btn-success" style="font-size:11px;padding:6px 14px" onclick="manualSave()">💾 Guardar ahora</button>
+          <div style="text-align:right"><div style="font-size:10px;color:#93c5fd">Expedientes</div><div style="font-size:20px;font-weight:900;color:#fbbf24;line-height:1">${S.exps.length}</div></div>
+        </div>
+      </div>
+      <div class="file-bar">
+        <div class="dot dot-green"></div>
+        <span style="color:#a5f3c7;font-weight:700">${esc(fileName)}</span>
+        <span style="margin-left:6px;opacity:.6">${appPassword?'🔐 Cifrado con AES-256':fileHandle?'· Sin protección de contraseña':''}</span>
+        <button onclick="openSecurityPanel()" style="margin-left:auto;background:none;border:1px solid rgba(255,255,255,0.2);border-radius:7px;padding:2px 10px;font-size:10px;font-weight:700;color:${appPassword?'#86efac':'#fca5a5'};cursor:pointer;font-family:inherit">${appPassword?'🔐 Contraseña activa':'⚠ Sin contraseña'}</button>
+      </div>
+      <div class="nav">${ns.map(([id,l])=>`<button class="${S.view===id||(id==='form'&&S.view==='form')?'active':''}" onclick="${id==='form'?'goNew()':'sv(\''+id+'\')'}">${l}</button>`).join('')}</div>
+    </div>`;}
+
+function rLista(){
+  let arr=S.lf.trim()?S.exps.filter(e=>[e.numeroJuicio,e.demandante,e.abogadoResponsable].some(v=>(v||'').toLowerCase().includes(S.lf.toLowerCase()))):[...S.exps];
+  // Sort
+  const cmpJ=(a,b)=>{const ax=String(a.numeroJuicio||''),bx=String(b.numeroJuicio||'');return ax.localeCompare(bx,'es',{numeric:true,sensitivity:'base'});};
+  const PR_ORDER={urgente:0,alta:1,normal:2,baja:3};
+  if(S.sortBy==='reg-desc') arr.sort((a,b)=>Number(b.id||0)-Number(a.id||0));
+  else if(S.sortBy==='reg-asc') arr.sort((a,b)=>Number(a.id||0)-Number(b.id||0));
+  else if(S.sortBy==='juicio-desc') arr.sort((a,b)=>cmpJ(b,a));
+  else if(S.sortBy==='juicio-asc') arr.sort((a,b)=>cmpJ(a,b));
+  else if(S.sortBy==='prio') arr.sort((a,b)=>(PR_ORDER[a.prioridad||'normal'])-(PR_ORDER[b.prioridad||'normal']));
+  const vis=arr;
+
+  // Dashboard metrics
+  const today=new Date();today.setHours(0,0,0,0);
+  const in7=new Date(today);in7.setDate(in7.getDate()+7);
+  const todayStr=today.toLocaleDateString('es-MX',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  const urgCount=S.exps.filter(e=>e.prioridad==='urgente').length;
+  const todayHearings=S.exps.filter(e=>{if(!e.fechaProximaAudiencia)return false;const d=new Date(e.fechaProximaAudiencia+'T00:00:00');return d.getTime()===today.getTime();}).length;
+  const weekHearings=S.exps.filter(e=>{if(!e.fechaProximaAudiencia)return false;const d=new Date(e.fechaProximaAudiencia+'T00:00:00');return d>=today&&d<=in7;}).length;
+
+  return `<div>
+    <div class="dash">
+      <div class="dash-info">
+        <div class="dash-date">📅 ${todayStr}</div>
+        <div class="dash-rem">💡 Recuerda revisar diariamente esta base de datos para no perder audiencias ni vencimientos</div>
+      </div>
+      <div class="dash-metrics">
+        <div class="metric m-urg${urgCount===0?' zero':''}"><div class="metric-num">${urgCount}</div><div class="metric-lbl">Urgentes</div></div>
+        <div class="metric m-today${todayHearings===0?' zero':''}"><div class="metric-num">${todayHearings}</div><div class="metric-lbl">Audiencias hoy</div></div>
+        <div class="metric m-week"><div class="metric-num">${weekHearings}</div><div class="metric-lbl">Próx. 7 días</div></div>
+        <div class="metric m-total"><div class="metric-num">${S.exps.length}</div><div class="metric-lbl">Total</div></div>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap">
+      <div class="sbar" style="margin-bottom:0"><div class="sbar-line"></div><span class="sbar-title">Expedientes</span><span style="font-size:10px;font-weight:800;background:#dbeafe;color:#1e40af;padding:2px 9px;border-radius:999px">${S.exps.length}</span></div>
+      <div style="margin-left:auto;display:flex;gap:8px;flex-wrap:wrap">
+        <select onchange="S.sortBy=this.value;render()" style="width:auto;cursor:pointer">
+          <option value="reg-desc"${S.sortBy==='reg-desc'?' selected':''}>📅 Registro: más reciente</option>
+          <option value="reg-asc"${S.sortBy==='reg-asc'?' selected':''}>📅 Registro: más antiguo</option>
+          <option value="juicio-desc"${S.sortBy==='juicio-desc'?' selected':''}>⚖ N° Juicio: descendente</option>
+          <option value="juicio-asc"${S.sortBy==='juicio-asc'?' selected':''}>⚖ N° Juicio: ascendente</option>
+          <option value="prio"${S.sortBy==='prio'?' selected':''}>🔴 Prioridad: urgentes primero</option>
+        </select>
+        <input value="${esc(S.lf)}" oninput="S.lf=this.value;render()" placeholder="Filtrar por juicio, demandante o abogado…" style="width:240px">
+        <button class="btn btn-secondary" onclick="downloadTemplate()" style="border-color:#c7d2fe;color:#3730a3;background:#eef2ff" title="Descarga un Excel vacío con las columnas correctas para llenarlo e importarlo">📋 Plantilla</button>
+        <button class="btn btn-secondary" onclick="document.getElementById('importFile').click()" style="border-color:#a7f3d0;color:#065f46;background:#f0fdf4">📥 Importar Excel</button>
+        <button class="btn btn-primary" onclick="goNew()">+ Nuevo</button>
+      </div>
+    </div>
+    ${S.exps.length===0?`<div class="card empty"><div class="empty-icon">📂</div><p style="color:#94a3b8;font-size:13px;margin-bottom:12px">No hay expedientes registrados.</p><button class="btn btn-primary" onclick="goNew()">Registrar el primero</button></div>`:
+    `<div class="card" style="padding:0;overflow:hidden"><div style="overflow-x:auto"><table class="tbl">
+      <thead><tr><th style="width:8px;padding:0"></th><th>Prio.</th><th>N° Juicio</th><th>Tipo de Juicio</th><th>Exp. Interno</th><th>Demandante</th><th>Sala</th><th>Tipo Trámite</th><th>Abogado</th><th>Estatus</th><th>Acciones</th></tr></thead>
+      <tbody>${vis.map(e=>{const p=PR_MAP[e.prioridad||'normal'];return `<tr>
+        <td style="background:${p.c};padding:0;width:4px;border-bottom-color:${p.c}"></td>
+        <td>${prBdg(e.prioridad)}</td>
+        <td style="font-weight:800;color:#1e3a5f;white-space:nowrap">${esc(e.numeroJuicio)}</td>
+        <td style="white-space:nowrap">${tjBdg(e.tipoJuicio,true)}</td>
+        <td style="color:#64748b;white-space:nowrap">${esc(e.numeroExpedienteInterno)||'—'}</td>
+        <td style="max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(e.demandante)}">${esc(e.demandante)||'—'}</td>
+        <td style="color:#64748b;white-space:nowrap">${esc(e.sala)||'—'}</td>
+        <td style="color:#64748b;white-space:nowrap">${esc(e.tipoTramite)||'—'}</td>
+        <td style="color:#64748b;white-space:nowrap">${esc(e.abogadoResponsable)||'—'}</td>
+        <td>${bdg(e.estatus,true)}</td>
+        <td>
+          <div style="display:flex;gap:6px;font-size:10px;white-space:nowrap">
+            <button class="link-btn" style="color:#2563eb" onclick="showDet('${e.id}')">Ver</button>
+            <span style="color:#e2e8f0">|</span>
+            <button class="link-btn" style="color:#d97706" onclick="doEdit('${e.id}')">Editar</button>
+            <span style="color:#e2e8f0">|</span>
+            <button class="link-btn" style="color:#ef4444" onclick="S.delC='${e.id}';render()">Eliminar</button>
+          </div>
+          ${S.delC===e.id?`<div class="confirm-box"><p style="font-size:10px;font-weight:800;color:#991b1b;margin-bottom:6px">¿Confirmar eliminación?</p><div style="display:flex;gap:6px"><button class="btn btn-danger btn-sm" onclick="doDel('${e.id}')">Eliminar</button><button class="btn btn-secondary btn-sm" onclick="S.delC=null;render()">Cancelar</button></div></div>`:''}
+        </td></tr>`}).join('')}</tbody></table></div></div>`}
+  </div>`;}
+
+function rForm(){
+  const ss=S.form.suspension==='Sí';
+  return `<div style="max-width:780px;margin:0 auto">
+    <div class="sbar"><div class="sbar-line"></div><span class="sbar-title">${S.editId?'Editar Expediente':'Nuevo Expediente'}</span>${S.editId?`<span style="font-size:10px;background:#fef3c7;color:#92400e;font-weight:800;padding:2px 9px;border-radius:999px">Editando: ${esc(S.form.numeroJuicio)}</span>`:''}</div>
+    <div class="card">
+      ${secT('Identificación del Juicio')}
+      <div class="grid2">
+        ${fld('Número de Juicio',inp('numeroJuicio','Ej. 123/2024'),true)}
+        ${fld('N° Expediente Interno / CNA',inp('numeroExpedienteInterno'))}
+        ${fld('Tipo de Juicio',sl('tipoJuicio',TIPO_JUICIO,true),false,true)}
+        ${fld('Demandante',inp('demandante'))}
+        ${fld('Sala',inp('sala'))}
+        ${fld('Unidad Administrativa',inp('unidadAdministrativa'))}
+        ${fld('Tipo de Trámite',sl('tipoTramite',TRAMITE,true))}
+        ${fld('Acto Impugnado',inp('actoImpugnado'),false,true)}
+        ${fld('Título de Concesión',inp('tituloConcesion'))}
+        ${fld('N° Exp. Administrativo (D.A.A.)',inp('numeroExpedienteAdministrativo'))}
+      </div>
+      ${secT('Autoridades y Responsable')}
+      <div class="grid2">
+        ${fld('Autoridad Demandada',inp('autoridadDemandada'))}
+        ${fld('Autoridad Vinculada',inp('autoridadVinculada'))}
+        ${fld('Abogado Responsable',inp('abogadoResponsable'))}
+      </div>
+      ${secT('Fechas y Audiencias')}
+      <div class="grid2">
+        ${fld('Fecha de Emplazamiento',di('fechaEmplazamiento'))}
+        ${fld('Fecha de Próxima Audiencia',di('fechaProximaAudiencia'))}
+        ${fld('Fecha de Sentencia',di('fechaSentencia'))}
+      </div>
+      ${secT('Suspensión')}
+      <div class="grid2">
+        ${fld('Suspensión',sl('suspension',SUSP))}
+        ${ss?fld('Fecha de Notif. de Suspensión',di('fechaNotificacionSuspension')):''}
+        ${ss?fld('Efectos de la Suspensión',inp('efectosSuspension'),false,true):''}
+      </div>
+      ${secT('Estatus y Seguimiento')}
+      <div class="grid2">
+        ${fld('Prioridad / Urgencia',`<select onchange="sf('prioridad',this.value)">${PRIORIDAD.map(p=>`<option value="${p.v}"${(S.form.prioridad||'normal')===p.v?' selected':''}>${p.l}</option>`).join('')}</select>`)}
+        ${fld('Estatus',sl('estatus',ESTATUS,true))}
+        ${fld('Fecha de Estatus',di('fechaEstatus'))}
+        ${fld('N° Requerimientos de Cumplimiento',`<input type="number" min="0" value="${esc(S.form.numeroRequerimientos)}" oninput="sf('numeroRequerimientos',this.value)">`)}
+        ${fld('N° de Apercibimientos',`<input type="number" min="0" value="${esc(S.form.numeroApercibimientos)}" oninput="sf('numeroApercibimientos',this.value)">`)}
+        ${fld('Fecha del Último Apercibimiento',di('fechaUltimoApercibimiento'))}
+      </div>
+      ${secT('Notas y Observaciones')}
+      <textarea oninput="sf('notas',this.value)" placeholder="Observaciones relevantes…">${esc(S.form.notas)}</textarea>
+      <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:18px;padding-top:14px;border-top:1px solid #f1f5f9">
+        <button class="btn btn-secondary" onclick="S.form={...EF};S.editId=null;sv('lista')">Cancelar</button>
+        <button class="btn btn-primary" onclick="doSave()">${S.editId?'Guardar Cambios':'Registrar Expediente'}</button>
+      </div>
+    </div>
+  </div>`;}
+
+function detB(e){return`
+  ${secT('Identificación')}${fRow('Tipo de Juicio',e.tipoJuicio)}${fRow('N° Exp. Interno / CNA',e.numeroExpedienteInterno)}${fRow('Demandante',e.demandante)}${fRow('Sala',e.sala)}${fRow('Unidad Administrativa',e.unidadAdministrativa)}${fRow('Acto Impugnado',e.actoImpugnado)}${fRow('Título de Concesión',e.tituloConcesion)}${fRow('N° Exp. Admvo. (D.A.A.)',e.numeroExpedienteAdministrativo)}${fRow('Tipo de Trámite',e.tipoTramite)}
+  ${secT('Autoridades')}${fRow('Autoridad Demandada',e.autoridadDemandada)}${fRow('Autoridad Vinculada',e.autoridadVinculada)}${fRow('Abogado Responsable',e.abogadoResponsable)}
+  ${secT('Fechas')}${fRow('Fecha de Emplazamiento',fd(e.fechaEmplazamiento))}${fRow('Fecha de Próx. Audiencia',fd(e.fechaProximaAudiencia))}${fRow('Fecha de Sentencia',fd(e.fechaSentencia))}
+  ${secT('Suspensión')}${fRow('Suspensión',e.suspension)}${fRow('Fecha de Notificación',fd(e.fechaNotificacionSuspension))}${fRow('Efectos de la Suspensión',e.efectosSuspension)}
+  ${secT('Seguimiento')}${fRow('Estatus',e.estatus)}${fRow('Fecha de Estatus',fd(e.fechaEstatus))}${fRow('N° Requerimientos',e.numeroRequerimientos||'—')}${fRow('N° Apercibimientos',e.numeroApercibimientos||'—')}${fRow('Fecha Último Apercibimiento',fd(e.fechaUltimoApercibimiento))}
+  ${e.notas?secT('Notas')+`<p style="font-size:12px;color:#1e293b;white-space:pre-wrap;line-height:1.6;margin-top:4px">${esc(e.notas)}</p>`:''}`;
+}
+
+function rDetalle(){const e=S.det;if(!e)return`<button class="link-btn" style="color:#2563eb" onclick="sv('lista')">← Volver</button>`;
+  return `<div style="max-width:680px;margin:0 auto">
+    <button class="link-btn" style="color:#2563eb;font-size:12px;display:block;margin-bottom:14px" onclick="S.delC=null;sv('lista')">← Volver a la lista</button>
+    <div class="card">
+      <div style="display:flex;align-items:start;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:10px">
+        <div><div style="font-size:18px;font-weight:900;color:#0f2044">${esc(e.numeroJuicio)}</div><div style="font-size:11px;color:#94a3b8;margin-top:4px;display:flex;align-items:center;gap:6px;flex-wrap:wrap">${tjBdg(e.tipoJuicio,true)}<span>${esc(e.tipoTramite)||'Tipo no especificado'}</span></div></div>
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">${prBdg(e.prioridad)}${bdg(e.estatus)}<button class="btn btn-secondary btn-sm" style="border-color:#fde68a;color:#d97706" onclick="doEdit('${e.id}')">Editar</button><button class="btn btn-secondary btn-sm" style="border-color:#fecaca;color:#ef4444" onclick="S.delC='det';render()">Eliminar</button></div>
+      </div>
+      ${S.delC==='det'?`<div class="confirm-box" style="margin-bottom:14px"><p style="font-size:12px;font-weight:800;color:#991b1b;margin-bottom:8px">¿Eliminar <strong>${esc(e.numeroJuicio)}</strong>?</p><div style="display:flex;gap:8px"><button class="btn btn-danger btn-sm" onclick="doDel('${e.id}')">Sí, eliminar</button><button class="btn btn-secondary btn-sm" onclick="S.delC=null;render()">Cancelar</button></div></div>`:''}
+      ${detB(e)}
+    </div>
+  </div>`;}
+
+function rBuscar(){
+  const q=S.sq.trim();
+  const res=S.srs;
+  return`<div style="max-width:860px;margin:0 auto">
+    <div class="sbar"><div class="sbar-line"></div><span class="sbar-title">Buscar Expediente</span></div>
+
+    <div class="card" style="margin-bottom:14px">
+      <p style="font-size:12px;color:#64748b;margin-bottom:10px">Busca por <strong>número de juicio</strong>, <strong>nombre del demandante</strong> (completo o parcial) o <strong>número de expediente CNA</strong>. Se muestran todos los resultados que coincidan.</p>
+      <div style="display:flex;gap:8px">
+        <input value="${esc(S.sq)}" oninput="S.sq=this.value;S.sdone=false;S.srs=[]" onkeydown="if(event.key==='Enter')doSearch()"
+          placeholder="Escribe el N° de juicio, nombre del demandante o N° CNA…" style="flex:1">
+        <button class="btn btn-primary" onclick="doSearch()">Buscar</button>
+        ${S.sdone?`<button class="btn btn-secondary" onclick="S.sq='';S.sdone=false;S.srs=[];render()">✕ Limpiar</button>`:''}
+      </div>
+    </div>
+
+    ${S.sdone&&!res.length?`
+      <div class="card empty">
+        <div class="empty-icon">🔍</div>
+        <p style="color:#94a3b8;font-size:12px">No se encontraron expedientes que coincidan con <strong>"${esc(q)}"</strong>.</p>
+        <p style="color:#cbd5e1;font-size:11px;margin-top:6px">Prueba con el nombre completo, parcial o con el número de expediente.</p>
+      </div>`:''
+    }
+
+    ${S.sdone&&res.length?`
+      <div style="margin-bottom:10px;display:flex;align-items:center;gap:8px">
+        <span style="font-size:12px;font-weight:700;color:#0f2044">${res.length} resultado${res.length!==1?'s':''} encontrado${res.length!==1?'s':''}</span>
+        <span style="font-size:11px;color:#94a3b8">para "<strong>${esc(q)}</strong>"</span>
+      </div>
+      ${res.length===1?`
+        <div class="card">
+          <div style="display:flex;align-items:start;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px">
+            <div>
+              <div style="font-size:16px;font-weight:900;color:#0f2044">${esc(res[0].numeroJuicio)}</div>
+              <div style="font-size:11px;color:#94a3b8;margin-top:4px;display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+                ${tjBdg(res[0].tipoJuicio,true)}<span>${esc(res[0].tipoTramite)||'Tipo no especificado'}</span>
+              </div>
+            </div>
+            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+              ${prBdg(res[0].prioridad)}${bdg(res[0].estatus)}
+              <button class="btn btn-secondary btn-sm" style="border-color:#fde68a;color:#d97706" onclick="doEdit('${res[0].id}')">Editar</button>
+            </div>
+          </div>
+          ${detB(res[0])}
+        </div>`:`
+        <div class="card" style="padding:0;overflow:hidden">
+          <div style="overflow-x:auto">
+            <table class="tbl">
+              <thead><tr>
+                <th style="width:4px;padding:0"></th>
+                <th>N° Juicio</th>
+                <th>N° CNA</th>
+                <th>Tipo de Juicio</th>
+                <th>Demandante</th>
+                <th>Sala</th>
+                <th>Abogado</th>
+                <th>Estatus</th>
+                <th>Acciones</th>
+              </tr></thead>
+              <tbody>${res.map(e=>{
+                const p=PR_MAP[e.prioridad||'normal'];
+                const ql=q.toLowerCase();
+                const hi=t=>{ // Highlight matching text
+                  if(!t)return'—';
+                  const idx=t.toLowerCase().indexOf(ql);
+                  if(idx<0)return esc(t);
+                  return esc(t.slice(0,idx))+'<mark style="background:#fef08a;padding:0;border-radius:2px">'+esc(t.slice(idx,idx+ql.length))+'</mark>'+esc(t.slice(idx+ql.length));
+                };
+                return`<tr>
+                  <td style="background:${p.c};padding:0;width:4px;border-bottom-color:${p.c}"></td>
+                  <td style="font-weight:800;color:#1e3a5f;white-space:nowrap">${hi(e.numeroJuicio)}</td>
+                  <td style="color:#64748b;white-space:nowrap">${hi(e.numeroExpedienteInterno)||'—'}</td>
+                  <td style="white-space:nowrap">${tjBdg(e.tipoJuicio,true)}</td>
+                  <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${hi(e.demandante)||'—'}</td>
+                  <td style="color:#64748b;white-space:nowrap">${esc(e.sala)||'—'}</td>
+                  <td style="color:#64748b;white-space:nowrap">${esc(e.abogadoResponsable)||'—'}</td>
+                  <td>${bdg(e.estatus,true)}</td>
+                  <td>
+                    <div style="display:flex;gap:6px;font-size:10px;font-weight:800;white-space:nowrap">
+                      <button class="link-btn" style="color:#2563eb" onclick="showDet('${e.id}')">Ver</button>
+                      <span style="color:#e2e8f0">|</span>
+                      <button class="link-btn" style="color:#d97706" onclick="doEdit('${e.id}')">Editar</button>
+                    </div>
+                  </td>
+                </tr>`;
+              }).join('')}</tbody>
+            </table>
+          </div>
+        </div>`}`:''
+    }
+  </div>`;}
+
+function rReportes(){
+  const today=new Date();today.setHours(0,0,0,0);const in30=new Date(today);in30.setDate(in30.getDate()+30);
+  const bySt=ESTATUS.reduce((a,s)=>({...a,[s]:S.exps.filter(e=>e.estatus===s)}),{});
+  const prox=[...S.exps].filter(e=>{if(!e.fechaProximaAudiencia)return false;const d=new Date(e.fechaProximaAudiencia+'T00:00:00');return d>=today&&d<=in30;}).sort((a,b)=>new Date(a.fechaProximaAudiencia)-new Date(b.fechaProximaAudiencia));
+  const byAb=S.exps.reduce((a,e)=>{const k=e.abogadoResponsable||'Sin asignar';if(!a[k])a[k]=[];a[k].push(e);return a;},{});
+  const mT=(rows,cols,hdrs,dc)=>`<div class="mt-wrap"><table class="mt"><thead><tr>${hdrs.map(h=>`<th>${h}</th>`).join('')}</tr></thead><tbody>${rows.map((r,i)=>`<tr style="background:${i%2?'#fafbfc':'white'}">${cols.map(c=>`<td style="${c==='numeroJuicio'?'font-weight:800;color:#1e3a5f':'color:#374151'}">${c==='estatus'?bdg(r[c],true):c===dc?fd(r[c]):esc(r[c])||'—'}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
+  const none='<p style="text-align:center;color:#94a3b8;padding:36px;font-size:12px">No hay expedientes registrados.</p>';
+  const tabs=[['estatus','📊 Por Estatus'],['audiencias','📅 Audiencias Próximas'],['abogado','👤 Por Abogado'],['general','📋 Listado General']];
+  let body='';
+  if(S.rep==='estatus'){
+    body=`<b style="color:#0f2044">Juicios por Estatus</b><div style="font-size:11px;color:#94a3b8;margin:3px 0 14px">Total: ${S.exps.length}</div>${S.exps.length===0?none:ESTATUS.map(s=>{const l=bySt[s]||[];return l.length?`<div style="margin-bottom:18px"><div style="display:flex;align-items:center;gap:8px;margin-bottom:5px">${bdg(s)}<span style="font-size:10px;color:#94a3b8;font-weight:700">${l.length} exp.</span></div>${mT(l,['numeroJuicio','demandante','abogadoResponsable','fechaEstatus'],['N° Juicio','Demandante','Abogado','Fecha Estatus'],'fechaEstatus')}</div>`:''}).join('')}${S.exps.length?`<div style="border-top:1px solid #f1f5f9;padding-top:14px;margin-top:6px"><p style="font-size:10px;font-weight:900;color:#94a3b8;text-transform:uppercase;letter-spacing:.12em;margin-bottom:10px">Resumen</p><div style="display:grid;grid-template-columns:1fr 1fr;gap:7px">${ESTATUS.map(s=>{const n=(bySt[s]||[]).length;return n?`<div style="display:flex;align-items:center;justify-content:space-between;background:#f8fafc;border-radius:9px;padding:7px 12px">${bdg(s,true)}<span style="font-size:13px;font-weight:900;color:#0f2044">${n}</span></div>`:''}).join('')}</div></div>`:''}`;
+  }else if(S.rep==='audiencias'){
+    body=`<b style="color:#0f2044">Audiencias Próximas</b><div style="font-size:11px;color:#94a3b8;margin:3px 0 14px">Próximos 30 días · hasta el ${in30.toLocaleDateString('es-MX',{day:'2-digit',month:'long',year:'numeric'})}</div>${prox.length===0?'<div style="text-align:center;padding:44px"><div style="font-size:32px;margin-bottom:10px">📅</div><p style="color:#94a3b8;font-size:12px">No hay audiencias en los próximos 30 días.</p></div>':`<div style="margin-bottom:10px"><span style="background:#fee2e2;color:#991b1b;font-size:10px;font-weight:800;padding:3px 12px;border-radius:999px">${prox.length} audiencia(s) próxima(s)</span></div>${mT(prox,['fechaProximaAudiencia','numeroJuicio','demandante','abogadoResponsable','estatus'],['Fecha','N° Juicio','Demandante','Abogado','Estatus'],'fechaProximaAudiencia')}`}`;
+  }else if(S.rep==='abogado'){
+    body=`<b style="color:#0f2044">Por Abogado Responsable</b><div style="font-size:11px;color:#94a3b8;margin:3px 0 14px">${Object.keys(byAb).length} abogado(s)</div>${S.exps.length===0?none:Object.entries(byAb).sort((a,b)=>b[1].length-a[1].length).map(([ab,l])=>`<div style="margin-bottom:18px"><div style="display:flex;align-items:center;gap:8px;margin-bottom:7px"><div style="width:26px;height:26px;border-radius:50%;background:#dbeafe;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;color:#1e40af">${(ab[0]||'?').toUpperCase()}</div><span style="font-size:12px;font-weight:900;color:#0f2044">${esc(ab)}</span><span style="font-size:10px;color:#94a3b8;font-weight:700">${l.length} juicio(s)</span></div>${mT(l,['numeroJuicio','demandante','tipoTramite','estatus'],['N° Juicio','Demandante','Tipo Trámite','Estatus'])}</div>`).join('')}`;
+  }else{
+    body=`<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:14px"><div><b style="color:#0f2044">Listado General</b><div style="font-size:11px;color:#94a3b8;margin-top:3px">Total: ${S.exps.length} expediente(s)</div></div>${S.exps.length>0?`<button class="btn btn-success" onclick="exportToExcel()" style="display:flex;align-items:center;gap:6px"><span style="font-size:14px">📊</span> Exportar a Excel</button>`:''}</div>${S.exps.length===0?none:`<div style="overflow-x:auto"><table class="tbl" style="font-size:10px"><thead><tr>${['N° Juicio','Exp. Interno','Demandante','Sala','U. Admva.','Tipo Trámite','Abogado','F. Emplazamiento','F. Sentencia','Suspensión','Estatus'].map(h=>`<th style="font-size:8px">${h}</th>`).join('')}</tr></thead><tbody>${S.exps.map((e,i)=>`<tr style="background:${i%2?'#fafbfc':'white'}"><td style="font-weight:800;color:#1e3a5f">${esc(e.numeroJuicio)}</td><td style="color:#64748b">${esc(e.numeroExpedienteInterno)||'—'}</td><td style="max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(e.demandante)||'—'}</td><td>${esc(e.sala)||'—'}</td><td>${esc(e.unidadAdministrativa)||'—'}</td><td>${esc(e.tipoTramite)||'—'}</td><td>${esc(e.abogadoResponsable)||'—'}</td><td>${fd(e.fechaEmplazamiento)}</td><td>${fd(e.fechaSentencia)}</td><td><span style="font-size:9px;font-weight:800;padding:2px 7px;border-radius:999px;background:${e.suspension==='Sí'?'#fef3c7':'#f1f5f9'};color:${e.suspension==='Sí'?'#92400e':'#64748b'}">${esc(e.suspension)||'—'}</span></td><td>${bdg(e.estatus,true)}</td></tr>`).join('')}</tbody></table></div>`}`;
+  }
+  return `<div><div class="sbar"><div class="sbar-line"></div><span class="sbar-title">Reportes</span></div><div class="rtabs">${tabs.map(([id,l])=>`<button class="rtab${S.rep===id?' active':''}" onclick="S.rep='${id}';render()">${l}</button>`).join('')}</div><div class="card">${body}</div></div>`;}
+
+function render(){rHdr();const v={lista:rLista,form:rForm,detalle:rDetalle,buscar:rBuscar,reportes:rReportes,importar:rImportar};document.getElementById('main').innerHTML=`<div id="importMain">${(v[S.view]||rLista)()}</div>`;}
+
+if(!fsOk){['btn-open','btn-new'].forEach(id=>{const b=document.getElementById(id);b.disabled=true;});wnote('⚠ Tu navegador no soporta archivos externos. Usa Chrome o Edge para esa función. Por ahora puedes usar el almacenamiento del navegador.');}
+</script>
+</body>
+</html>
