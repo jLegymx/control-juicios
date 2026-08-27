@@ -7,6 +7,9 @@
 <meta name="description" content="Sistema de Control de Juicios — Propiedad de Francisco Meza">
 <title>Sistema de Control de Juicios</title>
 <!-- ©️ Sistema de Control de Juicios — Desarrollado por Francisco Meza -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@500;600;700&family=Lato:wght@400;700;900&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
@@ -67,27 +70,41 @@ textarea{min-height:70px;resize:vertical}
 .file-bar{background:#1e3a5f;padding:5px 20px;display:flex;align-items:center;gap:8px;font-size:10px;color:#93c5fd;flex-wrap:wrap}
 .dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
 .dot-green{background:#4ade80}.dot-gray{background:#64748b}.dot-yellow{background:#fbbf24}
-/* Dashboard */
-.dash{background:white;border-radius:14px;border:1px solid #f1f5f9;border-left:4px solid #d4a017;padding:16px 22px;margin-bottom:16px;display:flex;align-items:center;gap:20px;flex-wrap:wrap}
+/* Dashboard — estilo corporativo legal (EB Garamond + Lato, navy/gold) */
+.dash{background:linear-gradient(180deg,#fff 0%,#fbfbfa 100%);border-radius:10px;border:1px solid #e2e8f0;border-top:3px solid #0f2044;padding:20px 26px;margin-bottom:18px;display:flex;align-items:center;gap:24px;flex-wrap:wrap;box-shadow:0 1px 3px rgba(15,32,68,.06)}
 .dash-info{flex:1;min-width:220px}
-.dash-date{font-size:16px;font-weight:900;color:#0f2044;text-transform:capitalize}
-.dash-rem{font-size:11px;color:#64748b;margin-top:3px;display:flex;align-items:center;gap:6px}
-.dash-metrics{display:flex;gap:8px;flex-wrap:wrap}
-.metric{padding:9px 14px;border-radius:10px;min-width:78px;text-align:center;border:1px solid transparent}
-.metric-num{font-size:18px;font-weight:900;line-height:1}
-.metric-lbl{font-size:8px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;margin-top:3px;opacity:.85}
-.m-urg{background:#fee2e2;color:#991b1b;border-color:#fecaca}
-.m-urg.zero{background:#f8fafc;color:#94a3b8;border-color:#f1f5f9}
-.m-today{background:#fef3c7;color:#92400e;border-color:#fde68a}
-.m-today.zero{background:#f8fafc;color:#94a3b8;border-color:#f1f5f9}
-.m-week{background:#dbeafe;color:#1e40af;border-color:#bfdbfe}
-.m-total{background:#f1f5f9;color:#0f2044;border-color:#e2e8f0}
-.m-plazo-venc{background:#fee2e2;color:#991b1b;border-color:#fecaca}
-.m-plazo-venc.zero{background:#f8fafc;color:#94a3b8;border-color:#f1f5f9}
-.m-plazo-prox{background:#ffedd5;color:#9a3412;border-color:#fed7aa}
-.m-plazo-prox.zero{background:#f8fafc;color:#94a3b8;border-color:#f1f5f9}
-.m-plazo-proc{background:#dbeafe;color:#1e40af;border-color:#bfdbfe}
-.m-plazo-proc.zero{background:#f8fafc;color:#94a3b8;border-color:#f1f5f9}
+.dash-date{font-family:'EB Garamond',Georgia,serif;font-size:20px;font-weight:600;color:#0f2044;text-transform:capitalize;display:flex;align-items:center;gap:9px;letter-spacing:.01em}
+.dash-date svg{flex-shrink:0;color:#d4a017}
+.dash-rem{font-family:'Lato',system-ui,sans-serif;font-size:11px;color:#64748b;margin-top:5px;display:flex;align-items:center;gap:7px;letter-spacing:.01em}
+.dash-rem svg{flex-shrink:0;color:#94a3b8}
+.dash-metrics{display:flex;gap:10px;flex-wrap:wrap}
+.metric{font-family:'Lato',system-ui,sans-serif;padding:10px 16px;border-radius:6px;min-width:82px;text-align:center;background:#fff;border:1px solid #e2e8f0;border-left:3px solid #cbd5e1;box-shadow:0 1px 2px rgba(15,23,42,.04);transition:box-shadow .2s,transform .2s}
+.metric:hover{box-shadow:0 3px 8px rgba(15,23,42,.08);transform:translateY(-1px)}
+.metric-num{font-size:19px;font-weight:900;line-height:1;color:#0f2044}
+.metric-lbl{font-size:8.5px;font-weight:800;text-transform:uppercase;letter-spacing:.07em;margin-top:4px;color:#64748b}
+.m-urg{border-left-color:#dc2626}
+.m-urg .metric-num{color:#991b1b}
+.m-urg.zero{border-left-color:#e2e8f0}
+.m-urg.zero .metric-num{color:#94a3b8}
+.m-today{border-left-color:#d4a017}
+.m-today .metric-num{color:#92400e}
+.m-today.zero{border-left-color:#e2e8f0}
+.m-today.zero .metric-num{color:#94a3b8}
+.m-week{border-left-color:#1e40af}
+.m-week .metric-num{color:#1e40af}
+.m-total{border-left-color:#0f2044}
+.m-plazo-venc{border-left-color:#dc2626}
+.m-plazo-venc .metric-num{color:#991b1b}
+.m-plazo-venc.zero{border-left-color:#e2e8f0}
+.m-plazo-venc.zero .metric-num{color:#94a3b8}
+.m-plazo-prox{border-left-color:#d4a017}
+.m-plazo-prox .metric-num{color:#9a3412}
+.m-plazo-prox.zero{border-left-color:#e2e8f0}
+.m-plazo-prox.zero .metric-num{color:#94a3b8}
+.m-plazo-proc{border-left-color:#1e40af}
+.m-plazo-proc .metric-num{color:#1e40af}
+.m-plazo-proc.zero{border-left-color:#e2e8f0}
+.m-plazo-proc.zero .metric-num{color:#94a3b8}
 /* Plazo contestación badges en tabla */
 .plazo-badge{display:inline-flex;align-items:center;gap:3px;font-size:9px;font-weight:800;padding:2px 7px;border-radius:999px;white-space:nowrap}
 .plazo-venc{background:#fee2e2;color:#991b1b}
@@ -129,8 +146,10 @@ textarea{min-height:70px;resize:vertical}
 .aten-oficio-val{font-size:10px;color:#065f46;font-weight:700}
 .aten-oficio-date{font-size:9px;color:#94a3b8}
 .aten-oficio-empty{font-size:10px;color:#d1d5db;font-style:italic}
-.m-aten{background:#d1fae5;color:#065f46;border-color:#bbf7d0}
-.m-aten.zero{background:#f8fafc;color:#94a3b8;border-color:#f1f5f9}
+.m-aten{border-left-color:#059669}
+.m-aten .metric-num{color:#065f46}
+.m-aten.zero{border-left-color:#e2e8f0}
+.m-aten.zero .metric-num{color:#94a3b8}
 /* ── Notificaciones ─────────────────────────────────────────── */
 .notif-banner{background:#1e3a5f;border-left:4px solid #fbbf24;padding:10px 20px;display:flex;align-items:flex-start;gap:12px;flex-wrap:wrap;position:sticky;top:0;z-index:40}
 .notif-body{flex:1;min-width:0}
@@ -218,9 +237,12 @@ textarea{min-height:70px;resize:vertical}
 .cumpl-amarillo{background:#fef9c3;color:#713f12}
 .cumpl-rojo{background:#fee2e2;color:#991b1b}
 .dias-chip{font-size:9px;font-weight:700;padding:2px 7px;border-radius:999px;margin-left:4px}
-.m-cumpl{background:#fef3c7;color:#92400e;border-color:#fde68a}
-.m-cumpl.zero{background:#f8fafc;color:#94a3b8;border-color:#f1f5f9}
-.m-cumpl.urgent{background:#fee2e2;color:#991b1b;border-color:#fecaca}
+.m-cumpl{border-left-color:#d4a017}
+.m-cumpl .metric-num{color:#92400e}
+.m-cumpl.zero{border-left-color:#e2e8f0}
+.m-cumpl.zero .metric-num{color:#94a3b8}
+.m-cumpl.urgent{border-left-color:#dc2626}
+.m-cumpl.urgent .metric-num{color:#991b1b}
 /* Plazo info box */
 .plazo-info{margin-top:6px;padding:8px 11px;border-radius:7px;font-size:10.5px;line-height:1.45}
 .plazo-info.contencioso{background:#fef3c7;color:#78350f;border-left:3px solid #d97706}
@@ -342,7 +364,7 @@ const SUPABASE_ANON_KEY = 'sb_publishable_Ne9opVMzKFWXvl3w5p3hCg_BGSQ_AaA';     
 // (1.2.1, 1.2.2 … 1.2.9); al llegar a 9 se reinicia a 0 y sube MENOR
 // (1.2.9 → 1.3.0).
 // ════════════════════════════════════════════════════════════════
-const APP_VERSION = '1.2.0';
+const APP_VERSION = '1.2.1';
 
 // ════════════════════════════════════════════════════════════════
 // CONSTANTES DE LA APP
@@ -1298,8 +1320,8 @@ function rLista() {
   return `<div>
     <div class="dash">
       <div class="dash-info">
-        <div class="dash-date">📅 ${todayStr}</div>
-        <div class="dash-rem">💡 Recuerda revisar diariamente esta base de datos para no perder audiencias ni vencimientos</div>
+        <div class="dash-date"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>${todayStr}</div>
+        <div class="dash-rem"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>Recuerda revisar diariamente esta base de datos para no perder audiencias ni vencimientos</div>
       </div>
       <div class="dash-metrics">
         <div class="metric m-urg${urgCount===0?' zero':''}"><div class="metric-num">${urgCount}</div><div class="metric-lbl">Urgentes</div></div>
@@ -1308,7 +1330,7 @@ function rLista() {
         <div class="metric m-plazo-venc${plazoVenc===0?' zero':''}"><div class="metric-num">${plazoVenc}</div><div class="metric-lbl">Contest. vencidas</div></div>
         <div class="metric m-plazo-prox${plazoProx===0?' zero':''}"><div class="metric-num">${plazoProx}</div><div class="metric-lbl">Contest. próx. 10d</div></div>
         <div class="metric m-plazo-proc${plazoProc===0?' zero':''}"><div class="metric-num">${plazoProc}</div><div class="metric-lbl">Contest. en proceso</div></div>
-        <div class="metric" onclick="sv('boletin')" style="cursor:pointer;background:#eef2ff;border-color:#c7d2fe"><div class="metric-num" style="color:#4338ca">${S.boletinHits.filter(h=>esBoletinRelevante(h) && !h.revisado).length}</div><div class="metric-lbl" style="color:#4338ca">Boletin pend.</div></div>
+        <div class="metric" onclick="sv('boletin')" style="cursor:pointer;border-left-color:#4338ca"><div class="metric-num" style="color:#4338ca">${S.boletinHits.filter(h=>esBoletinRelevante(h) && !h.revisado).length}</div><div class="metric-lbl">Boletin pend.</div></div>
         <div class="metric m-aten${atenCount===0?' zero':''}" style="cursor:pointer" onclick="S.atenOpen=!S.atenOpen;render()" title="Ver expedientes atendidos"><div class="metric-num">${atenCount}</div><div class="metric-lbl">Atendidos</div></div>
         <div class="metric m-cumpl${cumplVenc>0?' urgent':cumplProx===0?' zero':''}" title="Art. 58 LFPCA — sentencias para efectos"><div class="metric-num">${cumplVenc>0?cumplVenc:cumplProx}</div><div class="metric-lbl">${cumplVenc>0?'Cumpl. VENCIDOS':'Cumpl. próx. 30d'}</div></div>
         <div class="metric m-total"><div class="metric-num">${S.exps.length}</div><div class="metric-lbl">Total</div></div>
