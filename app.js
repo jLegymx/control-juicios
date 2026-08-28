@@ -4,6 +4,10 @@
 // ════════════════════════════════════════════════════════════════
 const SUPABASE_URL     = 'https://maqokevnoorpajxjtswg.supabase.co'; // ← CAMBIA ESTO
 const SUPABASE_ANON_KEY = 'sb_publishable_Ne9opVMzKFWXvl3w5p3hCg_BGSQ_AaA';                    // ← CAMBIA ESTO
+// Usuario del bot de Telegram para "Vincular Telegram" (sin la @).
+// Déjalo vacío ('') si no vas a usar recordatorios por Telegram.
+// Ver supabase/README.md para crear el bot y desplegar las funciones.
+const TELEGRAM_BOT_USERNAME = ''; // ← CAMBIA ESTO (p.ej. 'ControlJuiciosBot')
 
 // ════════════════════════════════════════════════════════════════
 // VERSIÓN DE LA APP
@@ -11,7 +15,7 @@ const SUPABASE_ANON_KEY = 'sb_publishable_Ne9opVMzKFWXvl3w5p3hCg_BGSQ_AaA';     
 // (1.2.1, 1.2.2 … 1.2.9); al llegar a 9 se reinicia a 0 y sube MENOR
 // (1.2.9 → 1.3.0).
 // ════════════════════════════════════════════════════════════════
-const APP_VERSION = '1.3.4';
+const APP_VERSION = '1.3.5';
 
 // ════════════════════════════════════════════════════════════════
 // CONSTANTES DE LA APP
@@ -369,7 +373,10 @@ let S = {
   view:'lista', exps:[], form:{...EF}, editId:null,
   sq:'', srs:[], sdone:false, rep:'estatus', delC:null,
   lf:'', det:null, sortBy:'reg-desc', statusFilter:'',
-  role:null, userEmail:'', userName:'', loading:false,
+  role:null, userId:null, userEmail:'', userName:'', loading:false,
+  // Preferencias de recordatorios (correo/Telegram) y su modal
+  notifPrefs: {emailReminders:true, telegramReminders:false, telegramLinked:false},
+  notifPrefsModal: false, notifPrefsSaving: false, telegramLinkCode: null,
   selected: new Set(),
   bitacora:[], bitacoraLoading:false,
   atenOpen: false,
@@ -567,15 +574,17 @@ async function onLogin(user) {
 
   // Obtener perfil y rol
   try {
-    const { data, error } = await SB.from('profiles').select('role,nombre').eq('id', user.id).single();
+    const { data, error } = await SB.from('profiles').select('role,nombre,email_reminders,telegram_reminders,telegram_chat_id').eq('id', user.id).single();
     if (!error && data) {
       S.role     = data.role  || 'readonly';
       S.userName = data.nombre || user.email;
+      S.notifPrefs = {emailReminders: !!data.email_reminders, telegramReminders: !!data.telegram_reminders, telegramLinked: !!data.telegram_chat_id};
     } else {
       S.role = 'readonly'; S.userName = user.email;
     }
   } catch { S.role = 'readonly'; S.userName = user.email; }
 
+  S.userId    = user.id;
   S.userEmail = user.email;
 
   // Mostrar app
@@ -602,6 +611,106 @@ function onLogout() {
   document.getElementById('loginBtn').textContent = 'Iniciar sesión';
   document.getElementById('loginEmail').value = '';
   document.getElementById('loginPassword').value = '';
+}
+
+// ════════════════════════════════════════════════════════════════
+// RECORDATORIOS — preferencias de correo/Telegram (envío diario lo
+// hace la Edge Function supabase/functions/send-reminders)
+// ════════════════════════════════════════════════════════════════
+async function openNotifPrefsModal(){
+  S.notifPrefsModal = true;
+  S.telegramLinkCode = null;
+  render();
+  try{
+    const { data, error } = await SB.from('profiles').select('email_reminders,telegram_reminders,telegram_chat_id').eq('id', S.userId).single();
+    if(!error && data) S.notifPrefs = {emailReminders: !!data.email_reminders, telegramReminders: !!data.telegram_reminders, telegramLinked: !!data.telegram_chat_id};
+  }catch{}
+  render();
+}
+function closeNotifPrefsModal(){ S.notifPrefsModal=false; S.telegramLinkCode=null; render(); }
+
+async function saveNotifPrefs(email, telegram){
+  const prev = {...S.notifPrefs};
+  S.notifPrefs.emailReminders = email;
+  S.notifPrefs.telegramReminders = telegram;
+  render();
+  try{
+    const { error } = await SB.rpc('set_notification_prefs', {p_email_reminders: email, p_telegram_reminders: telegram});
+    if(error) throw error;
+  }catch(e){
+    S.notifPrefs = prev;
+    showToast('No se pudo guardar la preferencia: '+e.message, true);
+    render();
+  }
+}
+function toggleEmailReminders(v){ saveNotifPrefs(v, S.notifPrefs.telegramReminders); }
+function toggleTelegramReminders(v){ saveNotifPrefs(S.notifPrefs.emailReminders, v); }
+
+async function linkTelegram(){
+  if(!TELEGRAM_BOT_USERNAME) return showToast('Telegram no está configurado en esta instalación', true);
+  try{
+    const { data, error } = await SB.rpc('generate_telegram_link_code');
+    if(error) throw error;
+    S.telegramLinkCode = data;
+    render();
+    window.open(`https://t.me/${TELEGRAM_BOT_USERNAME}?start=${data}`, '_blank');
+  }catch(e){ showToast('No se pudo generar el enlace: '+e.message, true); }
+}
+
+async function unlinkTelegram(){
+  if(!confirm('¿Desvincular tu cuenta de Telegram?')) return;
+  try{
+    const { error } = await SB.rpc('unlink_telegram');
+    if(error) throw error;
+    S.notifPrefs.telegramLinked = false;
+    S.notifPrefs.telegramReminders = false;
+    showToast('Telegram desvinculado');
+    render();
+  }catch(e){ showToast('Error: '+e.message, true); }
+}
+
+function rNotifPrefsModal(){
+  if(!S.notifPrefsModal) return '';
+  const p = S.notifPrefs;
+  return `<div class="dmodal-bg" onclick="if(event.target===this)closeNotifPrefsModal()">
+    <div class="dmodal" style="max-width:480px">
+      <div class="dmodal-hd">
+        <div><div style="font-weight:900;font-size:16px;color:#0f2044;display:flex;align-items:center;gap:7px">${icon('bell')} Recordatorios</div><div style="font-size:11.5px;color:#64748b;margin-top:2px">Plazos, audiencias, tareas y expedientes urgentes</div></div>
+        <button class="dmodal-close" onclick="closeNotifPrefsModal()">${icon('x')}</button>
+      </div>
+
+      <div class="dr" style="align-items:center">
+        <div class="dl" style="width:auto;flex:1">
+          <div style="text-transform:none;font-size:12.5px;font-weight:800;color:#1e293b;display:flex;align-items:center;gap:6px">${icon('mail')} Por correo</div>
+          <div style="font-size:10.5px;color:#94a3b8;font-weight:600;margin-top:2px">${esc(S.userEmail)}</div>
+        </div>
+        <label style="cursor:pointer">
+          <input type="checkbox" ${p.emailReminders?'checked':''} onchange="toggleEmailReminders(this.checked)" style="width:18px;height:18px">
+        </label>
+      </div>
+
+      <div class="dr" style="align-items:center">
+        <div class="dl" style="width:auto;flex:1">
+          <div style="text-transform:none;font-size:12.5px;font-weight:800;color:#1e293b;display:flex;align-items:center;gap:6px">${icon('bell')} Por Telegram</div>
+          <div style="font-size:10.5px;color:#94a3b8;font-weight:600;margin-top:2px">
+            ${!TELEGRAM_BOT_USERNAME ? 'No configurado en esta instalación' : p.telegramLinked ? 'Cuenta vinculada' : 'Sin vincular'}
+          </div>
+        </div>
+        ${TELEGRAM_BOT_USERNAME && p.telegramLinked ? `<label style="cursor:pointer">
+          <input type="checkbox" ${p.telegramReminders?'checked':''} onchange="toggleTelegramReminders(this.checked)" style="width:18px;height:18px">
+        </label>` : ''}
+      </div>
+
+      ${TELEGRAM_BOT_USERNAME ? (p.telegramLinked
+        ? `<button class="btn btn-secondary btn-sm" style="color:#dc2626;border-color:#fecaca" onclick="unlinkTelegram()">${icon('x')} Desvincular Telegram</button>`
+        : `<button class="btn btn-secondary btn-sm" onclick="linkTelegram()">${icon('key')} Vincular Telegram</button>
+           ${S.telegramLinkCode ? `<p style="font-size:10.5px;color:#94a3b8;margin-top:8px">Se abrió Telegram en otra pestaña. Si no, entra a <b>@${esc(TELEGRAM_BOT_USERNAME)}</b> y manda <code>/start ${esc(S.telegramLinkCode)}</code>.</p>` : ''}`) : ''}
+
+      <p style="font-size:10.5px;color:#94a3b8;margin-top:14px;padding-top:10px;border-top:1px solid #f1f5f9">
+        Recibirás un resumen diario de plazos de contestación, audiencias próximas, vencimientos de cumplimiento, tareas y expedientes urgentes.
+      </p>
+    </div>
+  </div>`;
 }
 
 // ════════════════════════════════════════════════════════════════
@@ -989,6 +1098,7 @@ function rHdr() {
             <div class="hdr-user-name">${esc(S.userName)}</div>
             <span class="hdr-role" style="background:${roleBg};color:${roleColor}">${roleLabel}</span>
           </div>
+          <button onclick="openNotifPrefsModal()" class="hdr-logout" title="Recordatorios por correo y Telegram">${icon('bell')}</button>
           <button onclick="logout()" class="hdr-logout">${icon('logOut')} Salir</button>
         </div>
       </div>
@@ -1769,7 +1879,7 @@ function render(){
   const paint = () => {
     rHdr();
     const v={lista:rLista,form:rForm,detalle:rDetalle,buscar:rBuscar,reportes:rReportes,importar:rImportar,bitacora:rBitacora,calendario:rCalendario,boletin:rBoletin};
-    document.getElementById('main').innerHTML = `<div id="importMain">${renderNotifBanner()}${(v[S.view]||rLista)()}</div>${rDashModal()}${rExportModal()}`;
+    document.getElementById('main').innerHTML = `<div id="importMain">${renderNotifBanner()}${(v[S.view]||rLista)()}</div>${rDashModal()}${rExportModal()}${rNotifPrefsModal()}`;
   };
   const reduceMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
   if (document.startViewTransition && !reduceMotion) {
