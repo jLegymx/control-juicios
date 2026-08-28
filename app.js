@@ -11,7 +11,7 @@ const SUPABASE_ANON_KEY = 'sb_publishable_Ne9opVMzKFWXvl3w5p3hCg_BGSQ_AaA';     
 // (1.2.1, 1.2.2 … 1.2.9); al llegar a 9 se reinicia a 0 y sube MENOR
 // (1.2.9 → 1.3.0).
 // ════════════════════════════════════════════════════════════════
-const APP_VERSION = '1.3.0';
+const APP_VERSION = '1.3.1';
 
 // ════════════════════════════════════════════════════════════════
 // CONSTANTES DE LA APP
@@ -644,7 +644,7 @@ const esc = s => String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replac
 const bdg = (s,sm) => { const c=SC[s]||{bg:'#f1f5f9',c:'#64748b'}; return`<span class="badge${sm?' badge-sm':''}" style="background:${c.bg};color:${c.c}">${esc(s)||'—'}</span>`; };
 const prBdg = (p) => { const x=PR_MAP[p||'normal']; return`<span class="prio" style="background:${x.bg};color:${x.c}"><span class="prio-dot" style="background:${x.c}"></span>${x.l.replace(/^[^\s]+\s/,'')}</span>`; };
 const prBar = (p) => { const x=PR_MAP[p||'normal']; return`<span class="prio-bar" style="background:${x.c}" title="${x.l}"></span>`; };
-const tjBdg = (t,sm) => { if(!t)return'<span style="color:#cbd5e1;font-size:10px">—</span>'; const c=TJ_COLORS[t]||{bg:'#f1f5f9',c:'#475569'}; return`<span class="badge${sm?' badge-sm':''}" style="background:${c.bg};color:${c.c}">${esc(t)}</span>`; };
+const tjBdg = (t,sm) => { if(!t)return'<span style="color:#cbd5e1;font-size:10.5px">—</span>'; const c=TJ_COLORS[t]||{bg:'#f1f5f9',c:'#475569'}; return`<span class="badge${sm?' badge-sm':''}" style="background:${c.bg};color:${c.c}">${esc(t)}</span>`; };
 const secT = t => `<div class="st"><span>${t}</span><hr></div>`;
 const fRow = (l,v) => `<div class="dr"><div class="dl">${l}</div><div class="dv">${esc(v)||'—'}</div></div>`;
 const lbl  = (t,req) => `<label class="lbl">${t}${req?'<span style="color:red;margin-left:2px">*</span>':''}</label>`;
@@ -882,10 +882,10 @@ function rDashModal(){
   return `<div class="dmodal-bg" onclick="if(event.target===this)closeDashModal()">
     <div class="dmodal">
       <div class="dmodal-hd">
-        <div><div style="font-weight:900;font-size:16px;color:#0f2044">${esc(title)}</div><div style="font-size:11px;color:#64748b;margin-top:2px">${list.length} expediente${list.length!==1?'s':''}</div></div>
+        <div><div style="font-weight:900;font-size:16px;color:#0f2044">${esc(title)}</div><div style="font-size:11.5px;color:#64748b;margin-top:2px">${list.length} expediente${list.length!==1?'s':''}</div></div>
         <button class="dmodal-close" onclick="closeDashModal()">✕</button>
       </div>
-      ${list.length===0 ? '<p style="text-align:center;color:#94a3b8;padding:36px;font-size:12px">No hay expedientes en esta categoría.</p>' : `
+      ${list.length===0 ? '<p style="text-align:center;color:#94a3b8;padding:36px;font-size:12.5px">No hay expedientes en esta categoría.</p>' : `
       <div style="overflow-x:auto"><table class="tbl">
         <thead><tr><th>N° Juicio</th><th>Demandante</th><th>Sala</th><th>Abogado</th><th>Estatus</th><th>Referencia</th><th>Acciones</th></tr></thead>
         <tbody>${list.map(e=>`<tr>
@@ -895,7 +895,7 @@ function rDashModal(){
           <td style="color:#64748b;white-space:nowrap">${esc(e.abogadoResponsable)||'—'}</td>
           <td>${bdg(e.estatus,true)}</td>
           <td style="white-space:nowrap">${ref(e)}</td>
-          <td><div style="display:flex;gap:6px;font-size:10px;white-space:nowrap"><button class="link-btn" style="color:#2563eb" onclick="closeDashModal();showDet('${e.id}')">Ver</button>${canWrite()?`<span style="color:#e2e8f0">|</span><button class="link-btn" style="color:#d97706" onclick="closeDashModal();doEdit('${e.id}')">Editar</button>`:''}</div></td>
+          <td><div style="display:flex;gap:6px;font-size:10.5px;white-space:nowrap"><button class="link-btn" style="color:#2563eb" onclick="closeDashModal();showDet('${e.id}')">Ver</button>${canWrite()?`<span style="color:#e2e8f0">|</span><button class="link-btn" style="color:#d97706" onclick="closeDashModal();doEdit('${e.id}')">Editar</button>`:''}</div></td>
         </tr>`).join('')}</tbody>
       </table></div>`}
     </div>
@@ -927,27 +927,27 @@ function rHdr() {
       <div class="header-top">
         <div class="logo">⚖</div>
         <div>
-          <div style="font-weight:900;font-size:14px">Sistema de Control de Juicios</div>
-          <div style="font-size:10px;color:#93c5fd;margin-top:1px">Organismo Desconcentrado · Administración Pública Federal</div>
+          <div class="hdr-title">Sistema de Control de Juicios</div>
+          <div class="hdr-sub">Organismo Desconcentrado · Administración Pública Federal</div>
         </div>
-        <div style="margin-left:auto;display:flex;align-items:center;gap:14px;flex-wrap:wrap">
-          <div style="text-align:right">
-            <div style="font-size:10px;color:#93c5fd">Expedientes totales</div>
-            <div style="font-size:20px;font-weight:900;color:#fbbf24;line-height:1">${S.exps.length}</div>
+        <div class="hdr-stats">
+          <div class="hdr-stat">
+            <div class="hdr-stat-lbl">Expedientes totales</div>
+            <div class="hdr-stat-num">${S.exps.length}</div>
           </div>
-          <div style="border-left:1px solid rgba(255,255,255,0.15);padding-left:14px;text-align:right">
-            <div style="font-size:11px;color:white;font-weight:700">${esc(S.userName)}</div>
-            <span style="font-size:9px;font-weight:800;padding:2px 8px;border-radius:999px;background:${roleBg};color:${roleColor}">${roleLabel}</span>
+          <div class="hdr-user">
+            <div class="hdr-user-name">${esc(S.userName)}</div>
+            <span class="hdr-role" style="background:${roleBg};color:${roleColor}">${roleLabel}</span>
           </div>
-          <button onclick="logout()" style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:8px;padding:6px 14px;font-size:11px;font-weight:700;color:white;cursor:pointer;font-family:inherit">⏏ Salir</button>
+          <button onclick="logout()" class="hdr-logout">⏏ Salir</button>
         </div>
       </div>
       <div class="file-bar">
         <div class="dot dot-green"></div>
         <span style="color:#a5f3c7;font-weight:700">Supabase · PostgreSQL</span>
         <span style="opacity:.6">· Sincronizado en la nube · Acceso desde cualquier dispositivo · v${APP_VERSION}</span>
-        ${S.loading ? '<span style="margin-left:auto;color:#fbbf24;font-size:10px;animation:pulse 1s infinite">⏳ Cargando…</span>' : ''}
-        <button onclick="loadData()" style="margin-left:auto;background:none;border:1px solid rgba(255,255,255,0.2);border-radius:6px;padding:2px 10px;font-size:10px;font-weight:700;color:#93c5fd;cursor:pointer;font-family:inherit">↺ Recargar</button>
+        ${S.loading ? '<span style="margin-left:auto;color:#fbbf24;font-size:10.5px;animation:pulse 1s infinite">⏳ Cargando…</span>' : ''}
+        <button onclick="loadData()" style="margin-left:auto;background:none;border:1px solid rgba(255,255,255,0.2);border-radius:6px;padding:2px 10px;font-size:10.5px;font-weight:700;color:#93c5fd;cursor:pointer;font-family:inherit">↺ Recargar</button>
       </div>
       ${!ad && !wr ? `<div class="readonly-bar">👁 Modo de solo lectura — puedes consultar y exportar, pero no modificar expedientes</div>` : ''}
       ${!ad && wr  ? `<div class="readonly-bar" style="border-left-color:#4ade80;color:#bbf7d0">✏️ Modo Editor — puedes registrar y editar expedientes, pero no eliminarlos</div>` : ''}
@@ -1073,10 +1073,10 @@ function rLista() {
       ${S.atenOpen ? `
       <div class="aten-body">
         <div class="aten-head-row" style="display:grid;grid-template-columns:140px 1fr 1fr 1fr;gap:6px;padding:5px 8px 7px;border-bottom:1px solid #bbf7d0">
-          <span style="font-size:9px;font-weight:900;color:#94a3b8;text-transform:uppercase;letter-spacing:.08em">N° Juicio</span>
-          <span style="font-size:9px;font-weight:900;color:#94a3b8;text-transform:uppercase;letter-spacing:.08em">Contestación</span>
-          <span style="font-size:9px;font-weight:900;color:#94a3b8;text-transform:uppercase;letter-spacing:.08em">Amp. Demanda</span>
-          <span style="font-size:9px;font-weight:900;color:#94a3b8;text-transform:uppercase;letter-spacing:.08em">Alegatos</span>
+          <span style="font-size:10.5px;font-weight:900;color:#94a3b8;text-transform:uppercase;letter-spacing:.08em">N° Juicio</span>
+          <span style="font-size:10.5px;font-weight:900;color:#94a3b8;text-transform:uppercase;letter-spacing:.08em">Contestación</span>
+          <span style="font-size:10.5px;font-weight:900;color:#94a3b8;text-transform:uppercase;letter-spacing:.08em">Amp. Demanda</span>
+          <span style="font-size:10.5px;font-weight:900;color:#94a3b8;text-transform:uppercase;letter-spacing:.08em">Alegatos</span>
         </div>
         ${atendidos.map(e=>{
           const ofCell = (oficio, fecha, lbl) => oficio
@@ -1084,8 +1084,8 @@ function rLista() {
             : `<div class="aten-oficio"><span class="aten-oficio-tag">${lbl}</span><span class="aten-oficio-empty">—</span></div>`;
           return `<div class="aten-row">
             <div>
-              <button class="link-btn" style="color:#2563eb;font-size:11px;font-weight:800" onclick="showDet('${e.id}')">${esc(e.numeroJuicio)}</button>
-              <div style="font-size:9px;color:#94a3b8;margin-top:1px">${esc(e.demandante)||'—'}</div>
+              <button class="link-btn" style="color:#2563eb;font-size:11.5px;font-weight:800" onclick="showDet('${e.id}')">${esc(e.numeroJuicio)}</button>
+              <div style="font-size:10.5px;color:#94a3b8;margin-top:1px">${esc(e.demandante)||'—'}</div>
             </div>
             ${ofCell(e.oficioContestacion, e.fechaOficioContestacion, 'Contestación')}
             ${ofCell(e.oficioAmpliacion,   e.fechaOficioAmpliacion,   'Amp. Demanda')}
@@ -1099,7 +1099,7 @@ function rLista() {
       <div class="sbar" style="margin-bottom:0">
         <div class="sbar-line"></div>
         <span class="sbar-title">Expedientes</span>
-        <span style="font-size:10px;font-weight:800;background:#dbeafe;color:#1e40af;padding:2px 9px;border-radius:999px">${arr.length}${arr.length!==S.exps.length?` / ${S.exps.length}`:''}</span>
+        <span style="font-size:10.5px;font-weight:800;background:#dbeafe;color:#1e40af;padding:2px 9px;border-radius:999px">${arr.length}${arr.length!==S.exps.length?` / ${S.exps.length}`:''}</span>
       </div>
       <div style="margin-left:auto;display:flex;gap:8px;flex-wrap:wrap">
         <select onchange="S.statusFilter=this.value;render()" style="width:auto;cursor:pointer" title="Filtrar por estatus">
@@ -1126,7 +1126,7 @@ function rLista() {
         ` : ''}
       </div>
     </div>
-    ${S.statusFilter ? `<div style="margin-bottom:12px;padding:8px 12px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;display:flex;align-items:center;gap:10px;font-size:11px"><span style="color:#1e40af;font-weight:700">Filtrando por estatus:</span>${bdg(S.statusFilter,true)}<button class="link-btn" style="color:#dc2626;font-size:11px;margin-left:auto" onclick="S.statusFilter='';render()">✕ Quitar filtro</button></div>` : ''}
+    ${S.statusFilter ? `<div style="margin-bottom:12px;padding:8px 12px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;display:flex;align-items:center;gap:10px;font-size:11.5px"><span style="color:#1e40af;font-weight:700">Filtrando por estatus:</span>${bdg(S.statusFilter,true)}<button class="link-btn" style="color:#dc2626;font-size:11.5px;margin-left:auto" onclick="S.statusFilter='';render()">✕ Quitar filtro</button></div>` : ''}
 
     ${S.exps.length===0 ? `
       <div class="card empty">
@@ -1138,7 +1138,7 @@ function rLista() {
       `<div>
         ${ad ? `
         <div id="bulkBar" style="display:${S.selected.size>0?'flex':'none'};align-items:center;gap:10px;background:#1e3a5f;border-radius:10px;padding:10px 16px;margin-bottom:10px;flex-wrap:wrap">
-          <span id="bulkCount" style="font-size:12px;font-weight:800;color:#93c5fd">${S.selected.size} expedientes seleccionados</span>
+          <span id="bulkCount" style="font-size:12.5px;font-weight:800;color:#93c5fd">${S.selected.size} expedientes seleccionados</span>
           <div style="margin-left:auto;display:flex;gap:8px">
             <button class="btn btn-secondary btn-sm" style="border-color:rgba(255,255,255,0.2);color:#93c5fd;background:rgba(255,255,255,0.08)" onclick="S.selected.clear();render()">✕ Deseleccionar todo</button>
             <button class="btn btn-danger btn-sm" onclick="doDelSelected()">🗑 Eliminar seleccionados</button>
@@ -1168,7 +1168,7 @@ function rLista() {
                                     (e.fechaOficioContestacion && String(e.fechaOficioContestacion).trim());
               let plazoBadge = _yaContestada
                 ? `<span class="plazo-badge plazo-ok">✓ Contestada${e.fechaOficioContestacion?' · '+fd(e.fechaOficioContestacion):''}</span>`
-                : '<span style="color:#cbd5e1;font-size:10px">—</span>';
+                : '<span style="color:#cbd5e1;font-size:10.5px">—</span>';
               if (_fl) {
                 const _fd = new Date(_fl+'T00:00:00');
                 const _diffMs = _fd - _todayMs;
@@ -1199,7 +1199,7 @@ function rLista() {
                 <td><span style="cursor:pointer" title="Click para filtrar por este estatus" onclick="S.statusFilter='${esc(e.estatus||'En trámite')}';render()">${bdg(e.estatus,true)}</span></td>
                 <td style="white-space:nowrap">${plazoBadge}</td>
                 <td class="sticky-col edge-r" style="right:0">
-                  <div style="display:flex;gap:6px;font-size:10px;font-weight:800;white-space:nowrap">
+                  <div style="display:flex;gap:6px;font-size:10.5px;font-weight:800;white-space:nowrap">
                     <button class="link-btn" style="color:#2563eb" onclick="showDet('${e.id}')">Ver</button>
                     ${wr ? `<span style="color:#e2e8f0">|</span><button class="link-btn" style="color:#d97706" onclick="doEdit('${e.id}')">Editar</button>` : ''}
                     ${ad ? `<span style="color:#e2e8f0">|</span><button class="link-btn" style="color:#ef4444" onclick="if(confirm('¿Eliminar ${esc(e.numeroJuicio)}?'))doDel('${e.id}')">Eliminar</button>` : ''}
@@ -1222,7 +1222,7 @@ function rForm() {
     <div class="card" style="padding:40px;text-align:center">
       <div style="font-size:36px;margin-bottom:12px">⛔</div>
       <p style="color:#dc2626;font-weight:800;font-size:14px">Sin permisos de edición</p>
-      <p style="color:#94a3b8;font-size:12px;margin:8px 0 16px">Tu cuenta tiene acceso de solo lectura.</p>
+      <p style="color:#94a3b8;font-size:12.5px;margin:8px 0 16px">Tu cuenta tiene acceso de solo lectura.</p>
       <button class="btn btn-secondary" onclick="sv('lista')">Volver a la lista</button>
     </div>`;
 
@@ -1268,7 +1268,7 @@ function rForm() {
         ${fld('Fecha de Sentencia',`<input type="date" value="${S.form.fechaSentencia||''}" onchange="sf('fechaSentencia',this.value);recalcFirmeza()">`)}
         ${fld('Efecto de la Sentencia',`<select onchange="sf('efectoSentencia',this.value);recalcFirmeza()">${EFECTO_SENTENCIA.map(o=>`<option value="${esc(o)}"${S.form.efectoSentencia===o?' selected':''}>${o||'Seleccionar…'}</option>`).join('')}</select>`)}
         ${fld('Fecha de Notificación de Sentencia',`<input type="date" value="${S.form.fechaNotificacionSentencia||''}" onchange="sf('fechaNotificacionSentencia',this.value);recalcFirmeza()">`,false,false,true)}
-        ${fld('Fecha de Firmeza','<span style="font-size:10px;color:#94a3b8;font-style:italic">Se calcula en el panel inferior — editable</span>')}
+        ${fld('Fecha de Firmeza','<span style="font-size:10.5px;color:#94a3b8;font-style:italic">Se calcula en el panel inferior — editable</span>')}
       </div>
       ${firmezaPanelHTML(S.form, true)}
       ${secT('Suspensión')}
@@ -1292,7 +1292,7 @@ function rForm() {
         ${fld('Fecha del Memo de Informe',di('fechaMemo'))}
       </div>
       ${secT('Respuestas con Oficio')}
-      <p style="font-size:11px;color:#64748b;margin-bottom:10px;margin-top:-4px">Registra el número de oficio y fecha con que se dio respuesta a cada etapa procesal. Todos los campos son optativos.</p>
+      <p style="font-size:11.5px;color:#64748b;margin-bottom:10px;margin-top:-4px">Registra el número de oficio y fecha con que se dio respuesta a cada etapa procesal. Todos los campos son optativos.</p>
       <div class="grid2">
         ${fld('N° Oficio — Contestación de Demanda',inp('oficioContestacion','Ej. CNA-DGAJ-001/2024'))}
         ${fld('Fecha del Oficio de Contestación',di('fechaOficioContestacion'))}
@@ -1325,7 +1325,7 @@ function detB(e){
   const tabs = `<div class="det-tabs">
     <button class="det-tab${tab==='info'?'  active':''}"     onclick="S.detTab='info';render()">📋 Información</button>
     <button class="det-tab${tab==='timeline'?' active':''}"  onclick="S.detTab='timeline';render()">📊 Actuaciones</button>
-    <button class="det-tab${tab==='tareas'?'  active':''}"   onclick="S.detTab='tareas';render()">✅ Tareas${pend>0?` <span style="background:#dc2626;color:white;font-size:9px;padding:1px 6px;border-radius:999px;margin-left:3px">${pend}</span>`:''}</button>
+    <button class="det-tab${tab==='tareas'?'  active':''}"   onclick="S.detTab='tareas';render()">✅ Tareas${pend>0?` <span style="background:#dc2626;color:white;font-size:10.5px;padding:1px 6px;border-radius:999px;margin-left:3px">${pend}</span>`:''}</button>
     <button class="det-tab${tab==='docs'?'    active':''}"   onclick="S.detTab='docs';loadDocs('${e.id}');render()">📎 Documentos</button>
   </div>`;
 
@@ -1344,11 +1344,11 @@ function detB(e){
       (e.oficioAmpliacion  ?fRow('Oficio Amp. Demanda', e.oficioAmpliacion  +(e.fechaOficioAmpliacion  ?' · '+fd(e.fechaOficioAmpliacion)  :'')):'') +
       (e.oficioAlegatos    ?fRow('Oficio Alegatos',     e.oficioAlegatos    +(e.fechaOficioAlegatos    ?' · '+fd(e.fechaOficioAlegatos)    :'')):'')
     :''}
-    ${e.resumenActuaciones?secT('Resumen Procesal')+`<p style="font-size:12px;color:#1e293b;white-space:pre-wrap;line-height:1.6;margin-top:4px">${esc(e.resumenActuaciones)}</p>`:''}
-    ${e.notas?secT('Notas')+`<p style="font-size:12px;color:#1e293b;white-space:pre-wrap;line-height:1.6;margin-top:4px">${esc(e.notas)}</p>`:''}
+    ${e.resumenActuaciones?secT('Resumen Procesal')+`<p style="font-size:12.5px;color:#1e293b;white-space:pre-wrap;line-height:1.6;margin-top:4px">${esc(e.resumenActuaciones)}</p>`:''}
+    ${e.notas?secT('Notas')+`<p style="font-size:12.5px;color:#1e293b;white-space:pre-wrap;line-height:1.6;margin-top:4px">${esc(e.notas)}</p>`:''}
     ${secT('Historial de Cambios')}
     <div id="detHistory" style="min-height:40px">
-      <button onclick="loadDetHistory('${e.id}')" style="font-size:11px;color:#2563eb;background:none;border:1px dashed #bfdbfe;border-radius:7px;padding:6px 16px;cursor:pointer;width:100%;font-family:inherit">📋 Cargar historial de este expediente</button>
+      <button onclick="loadDetHistory('${e.id}')" style="font-size:11.5px;color:#2563eb;background:none;border:1px dashed #bfdbfe;border-radius:7px;padding:6px 16px;cursor:pointer;width:100%;font-family:inherit">📋 Cargar historial de este expediente</button>
     </div>`;
   else if (tab === 'timeline') body = rTimeline(e);
   else if (tab === 'tareas')   body = rTareas(e);
@@ -1363,12 +1363,12 @@ function rDetalle(){
   const ad = isAdmin();
   const wr = canWrite();
   return `<div style="max-width:680px;margin:0 auto">
-    <button class="link-btn" style="color:#2563eb;font-size:12px;display:block;margin-bottom:14px" onclick="S.delC=null;sv('lista')">← Volver a la lista</button>
+    <button class="link-btn" style="color:#2563eb;font-size:12.5px;display:block;margin-bottom:14px" onclick="S.delC=null;sv('lista')">← Volver a la lista</button>
     <div class="card">
       <div style="display:flex;align-items:start;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:10px">
         <div>
           <div style="font-size:18px;font-weight:900;color:#0f2044">${esc(e.numeroJuicio)}</div>
-          <div style="font-size:11px;color:#94a3b8;margin-top:4px;display:flex;align-items:center;gap:6px;flex-wrap:wrap">${tjBdg(e.tipoJuicio,true)}<span>${esc(e.tipoTramite)||'Tipo no especificado'}</span></div>
+          <div style="font-size:11.5px;color:#94a3b8;margin-top:4px;display:flex;align-items:center;gap:6px;flex-wrap:wrap">${tjBdg(e.tipoJuicio,true)}<span>${esc(e.tipoTramite)||'Tipo no especificado'}</span></div>
         </div>
         <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
           ${prBdg(e.prioridad)}${bdg(e.estatus)}
@@ -1378,7 +1378,7 @@ function rDetalle(){
       </div>
       ${S.delC==='det' && ad ? `
         <div class="confirm-box" style="margin-bottom:14px">
-          <p style="font-size:12px;font-weight:800;color:#991b1b;margin-bottom:8px">¿Eliminar <strong>${esc(e.numeroJuicio)}</strong>? Esta acción no se puede deshacer.</p>
+          <p style="font-size:12.5px;font-weight:800;color:#991b1b;margin-bottom:8px">¿Eliminar <strong>${esc(e.numeroJuicio)}</strong>? Esta acción no se puede deshacer.</p>
           <div style="display:flex;gap:8px">
             <button class="btn btn-danger btn-sm" onclick="doDel('${e.id}')">Sí, eliminar</button>
             <button class="btn btn-secondary btn-sm" onclick="S.delC=null;render()">Cancelar</button>
@@ -1400,7 +1400,7 @@ function rBuscar(){
   return`<div style="max-width:860px;margin:0 auto">
     <div class="sbar"><div class="sbar-line"></div><span class="sbar-title">Buscar Expediente</span></div>
     <div class="card" style="margin-bottom:14px">
-      <p style="font-size:12px;color:#64748b;margin-bottom:10px">Busca por <strong>número de juicio</strong>, <strong>nombre del demandante</strong> o <strong>número de expediente CNA</strong>.</p>
+      <p style="font-size:12.5px;color:#64748b;margin-bottom:10px">Busca por <strong>número de juicio</strong>, <strong>nombre del demandante</strong> o <strong>número de expediente CNA</strong>.</p>
       <div style="display:flex;gap:8px">
         <input value="${esc(S.sq)}" oninput="S.sq=this.value;S.sdone=false;S.srs=[]" onkeydown="if(event.key==='Enter')doSearch()"
           placeholder="Escribe el N° de juicio, nombre del demandante o N° CNA…" style="flex:1">
@@ -1411,19 +1411,19 @@ function rBuscar(){
     ${S.sdone && !res.length ? `
       <div class="card empty">
         <div class="empty-icon">🔍</div>
-        <p style="color:#94a3b8;font-size:12px">No se encontraron expedientes que coincidan con <strong>"${esc(q)}"</strong>.</p>
+        <p style="color:#94a3b8;font-size:12.5px">No se encontraron expedientes que coincidan con <strong>"${esc(q)}"</strong>.</p>
       </div>` : ''}
     ${S.sdone && res.length ? `
       <div style="margin-bottom:10px;display:flex;align-items:center;gap:8px">
-        <span style="font-size:12px;font-weight:700;color:#0f2044">${res.length} resultado${res.length!==1?'s':''} encontrado${res.length!==1?'s':''}</span>
-        <span style="font-size:11px;color:#94a3b8">para "<strong>${esc(q)}</strong>"</span>
+        <span style="font-size:12.5px;font-weight:700;color:#0f2044">${res.length} resultado${res.length!==1?'s':''} encontrado${res.length!==1?'s':''}</span>
+        <span style="font-size:11.5px;color:#94a3b8">para "<strong>${esc(q)}</strong>"</span>
       </div>
       ${res.length===1 ? `
         <div class="card">
           <div style="display:flex;align-items:start;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px">
             <div>
               <div style="font-size:16px;font-weight:900;color:#0f2044">${esc(res[0].numeroJuicio)}</div>
-              <div style="font-size:11px;color:#94a3b8;margin-top:4px;display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+              <div style="font-size:11.5px;color:#94a3b8;margin-top:4px;display:flex;align-items:center;gap:6px;flex-wrap:wrap">
                 ${tjBdg(res[0].tipoJuicio,true)}<span>${esc(res[0].tipoTramite)||'Tipo no especificado'}</span>
               </div>
             </div>
@@ -1465,7 +1465,7 @@ function rBuscar(){
                 <td style="color:#64748b;white-space:nowrap">${esc(e.abogadoResponsable)||'—'}</td>
                 <td>${bdg(e.estatus,true)}</td>
                 <td class="sticky-col edge-r" style="right:0">
-                  <div style="display:flex;gap:6px;font-size:10px;font-weight:800;white-space:nowrap">
+                  <div style="display:flex;gap:6px;font-size:10.5px;font-weight:800;white-space:nowrap">
                     <button class="link-btn" style="color:#2563eb" onclick="showDet('${e.id}')">Ver</button>
                     ${wr ? `<span style="color:#e2e8f0">|</span><button class="link-btn" style="color:#d97706" onclick="doEdit('${e.id}')">Editar</button>` : ''}
                   </div>
@@ -1487,17 +1487,17 @@ function rReportes(){
   const prox=[...S.exps].filter(e=>{if(!e.fechaProximaAudiencia)return false;const d=new Date(e.fechaProximaAudiencia+'T00:00:00');return d>=today&&d<=in30;}).sort((a,b)=>new Date(a.fechaProximaAudiencia)-new Date(b.fechaProximaAudiencia));
   const byAb=S.exps.reduce((a,e)=>{const k=e.abogadoResponsable||'Sin asignar';if(!a[k])a[k]=[];a[k].push(e);return a;},{});
   const mT=(rows,cols,hdrs,dc)=>`<div class="mt-wrap"><table class="mt"><thead><tr>${hdrs.map(h=>`<th>${h}</th>`).join('')}</tr></thead><tbody>${rows.map((r,i)=>`<tr style="background:${i%2?'#fafbfc':'white'}">${cols.map(c=>`<td style="${c==='numeroJuicio'?'font-weight:800;color:#1e3a5f':'color:#374151'}">${c==='estatus'?bdg(r[c],true):c===dc?fd(r[c]):esc(r[c])||'—'}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
-  const none='<p style="text-align:center;color:#94a3b8;padding:36px;font-size:12px">No hay expedientes registrados.</p>';
+  const none='<p style="text-align:center;color:#94a3b8;padding:36px;font-size:12.5px">No hay expedientes registrados.</p>';
   const tabs=[['estatus','📊 Por Estatus'],['audiencias','📅 Audiencias Próximas'],['abogado','👤 Por Abogado'],['general','📋 Listado General']];
   let body='';
   if(S.rep==='estatus'){
-    body=`<b style="color:#0f2044">Juicios por Estatus</b><div style="font-size:11px;color:#94a3b8;margin:3px 0 14px">Total: ${S.exps.length}</div>${S.exps.length===0?none:ESTATUS.map(s=>{const l=bySt[s]||[];return l.length?`<div style="margin-bottom:18px"><div style="display:flex;align-items:center;gap:8px;margin-bottom:5px">${bdg(s)}<span style="font-size:10px;color:#94a3b8;font-weight:700">${l.length} exp.</span></div>${mT(l,['numeroJuicio','demandante','abogadoResponsable','fechaEstatus'],['N° Juicio','Demandante','Abogado','Fecha Estatus'],'fechaEstatus')}</div>`:''}).join('')}${S.exps.length?`<div style="border-top:1px solid #f1f5f9;padding-top:14px;margin-top:6px"><p style="font-size:10px;font-weight:900;color:#94a3b8;text-transform:uppercase;letter-spacing:.12em;margin-bottom:10px">Resumen</p><div style="display:grid;grid-template-columns:1fr 1fr;gap:7px">${ESTATUS.map(s=>{const n=(bySt[s]||[]).length;return n?`<div style="display:flex;align-items:center;justify-content:space-between;background:#f8fafc;border-radius:9px;padding:7px 12px">${bdg(s,true)}<span style="font-size:13px;font-weight:900;color:#0f2044">${n}</span></div>`:''}).join('')}</div></div>`:''}`;
+    body=`<b style="color:#0f2044">Juicios por Estatus</b><div style="font-size:11.5px;color:#94a3b8;margin:3px 0 14px">Total: ${S.exps.length}</div>${S.exps.length===0?none:ESTATUS.map(s=>{const l=bySt[s]||[];return l.length?`<div style="margin-bottom:18px"><div style="display:flex;align-items:center;gap:8px;margin-bottom:5px">${bdg(s)}<span style="font-size:10.5px;color:#94a3b8;font-weight:700">${l.length} exp.</span></div>${mT(l,['numeroJuicio','demandante','abogadoResponsable','fechaEstatus'],['N° Juicio','Demandante','Abogado','Fecha Estatus'],'fechaEstatus')}</div>`:''}).join('')}${S.exps.length?`<div style="border-top:1px solid #f1f5f9;padding-top:14px;margin-top:6px"><p style="font-size:10.5px;font-weight:900;color:#94a3b8;text-transform:uppercase;letter-spacing:.12em;margin-bottom:10px">Resumen</p><div style="display:grid;grid-template-columns:1fr 1fr;gap:7px">${ESTATUS.map(s=>{const n=(bySt[s]||[]).length;return n?`<div style="display:flex;align-items:center;justify-content:space-between;background:#f8fafc;border-radius:9px;padding:7px 12px">${bdg(s,true)}<span style="font-size:13px;font-weight:900;color:#0f2044">${n}</span></div>`:''}).join('')}</div></div>`:''}`;
   }else if(S.rep==='audiencias'){
-    body=`<b style="color:#0f2044">Audiencias Próximas</b><div style="font-size:11px;color:#94a3b8;margin:3px 0 14px">Próximos 30 días · hasta el ${in30.toLocaleDateString('es-MX',{day:'2-digit',month:'long',year:'numeric'})}</div>${prox.length===0?'<div style="text-align:center;padding:44px"><div style="font-size:32px;margin-bottom:10px">📅</div><p style="color:#94a3b8;font-size:12px">No hay audiencias en los próximos 30 días.</p></div>':`<div style="margin-bottom:10px"><span style="background:#fee2e2;color:#991b1b;font-size:10px;font-weight:800;padding:3px 12px;border-radius:999px">${prox.length} audiencia(s) próxima(s)</span></div>${mT(prox,['fechaProximaAudiencia','numeroJuicio','demandante','abogadoResponsable','estatus'],['Fecha','N° Juicio','Demandante','Abogado','Estatus'],'fechaProximaAudiencia')}`}`;
+    body=`<b style="color:#0f2044">Audiencias Próximas</b><div style="font-size:11.5px;color:#94a3b8;margin:3px 0 14px">Próximos 30 días · hasta el ${in30.toLocaleDateString('es-MX',{day:'2-digit',month:'long',year:'numeric'})}</div>${prox.length===0?'<div style="text-align:center;padding:44px"><div style="font-size:32px;margin-bottom:10px">📅</div><p style="color:#94a3b8;font-size:12.5px">No hay audiencias en los próximos 30 días.</p></div>':`<div style="margin-bottom:10px"><span style="background:#fee2e2;color:#991b1b;font-size:10.5px;font-weight:800;padding:3px 12px;border-radius:999px">${prox.length} audiencia(s) próxima(s)</span></div>${mT(prox,['fechaProximaAudiencia','numeroJuicio','demandante','abogadoResponsable','estatus'],['Fecha','N° Juicio','Demandante','Abogado','Estatus'],'fechaProximaAudiencia')}`}`;
   }else if(S.rep==='abogado'){
-    body=`<b style="color:#0f2044">Por Abogado Responsable</b><div style="font-size:11px;color:#94a3b8;margin:3px 0 14px">${Object.keys(byAb).length} abogado(s)</div>${S.exps.length===0?none:Object.entries(byAb).sort((a,b)=>b[1].length-a[1].length).map(([ab,l])=>`<div style="margin-bottom:18px"><div style="display:flex;align-items:center;gap:8px;margin-bottom:7px"><div style="width:26px;height:26px;border-radius:50%;background:#dbeafe;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;color:#1e40af">${(ab[0]||'?').toUpperCase()}</div><span style="font-size:12px;font-weight:900;color:#0f2044">${esc(ab)}</span><span style="font-size:10px;color:#94a3b8;font-weight:700">${l.length} juicio(s)</span></div>${mT(l,['numeroJuicio','demandante','tipoTramite','estatus'],['N° Juicio','Demandante','Tipo Trámite','Estatus'])}</div>`).join('')}`;
+    body=`<b style="color:#0f2044">Por Abogado Responsable</b><div style="font-size:11.5px;color:#94a3b8;margin:3px 0 14px">${Object.keys(byAb).length} abogado(s)</div>${S.exps.length===0?none:Object.entries(byAb).sort((a,b)=>b[1].length-a[1].length).map(([ab,l])=>`<div style="margin-bottom:18px"><div style="display:flex;align-items:center;gap:8px;margin-bottom:7px"><div style="width:26px;height:26px;border-radius:50%;background:#dbeafe;display:flex;align-items:center;justify-content:center;font-size:11.5px;font-weight:900;color:#1e40af">${(ab[0]||'?').toUpperCase()}</div><span style="font-size:12.5px;font-weight:900;color:#0f2044">${esc(ab)}</span><span style="font-size:10.5px;color:#94a3b8;font-weight:700">${l.length} juicio(s)</span></div>${mT(l,['numeroJuicio','demandante','tipoTramite','estatus'],['N° Juicio','Demandante','Tipo Trámite','Estatus'])}</div>`).join('')}`;
   }else{
-    body=`<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:14px"><div><b style="color:#0f2044">Listado General</b><div style="font-size:11px;color:#94a3b8;margin-top:3px">Total: ${S.exps.length} expediente(s)</div></div>${S.exps.length>0?`<button class="btn btn-success" onclick="exportToExcel()" style="display:flex;align-items:center;gap:6px"><span style="font-size:14px">📊</span> Exportar a Excel</button>`:''}</div>${S.exps.length===0?none:`<div style="overflow-x:auto"><table class="tbl" style="font-size:10px"><thead><tr>${['N° Juicio','Exp. Interno','Demandante','Sala','U. Admva.','Tipo Trámite','Abogado','F. Emplazamiento','F. Sentencia','Suspensión','Estatus'].map(h=>`<th style="font-size:8px">${h}</th>`).join('')}</tr></thead><tbody>${S.exps.map((e,i)=>`<tr style="background:${i%2?'#fafbfc':'white'}"><td style="font-weight:800;color:#1e3a5f">${esc(e.numeroJuicio)}</td><td style="color:#64748b">${esc(e.numeroExpedienteInterno)||'—'}</td><td style="max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(e.demandante)||'—'}</td><td>${esc(e.sala)||'—'}</td><td>${esc(e.unidadAdministrativa)||'—'}</td><td>${esc(e.tipoTramite)||'—'}</td><td>${esc(e.abogadoResponsable)||'—'}</td><td>${fd(e.fechaEmplazamiento)}</td><td>${fd(e.fechaSentencia)}</td><td><span style="font-size:9px;font-weight:800;padding:2px 7px;border-radius:999px;background:${e.suspension==='Sí'?'#fef3c7':'#f1f5f9'};color:${e.suspension==='Sí'?'#92400e':'#64748b'}">${esc(e.suspension)||'—'}</span></td><td>${bdg(e.estatus,true)}</td></tr>`).join('')}</tbody></table></div>`}`;
+    body=`<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:14px"><div><b style="color:#0f2044">Listado General</b><div style="font-size:11.5px;color:#94a3b8;margin-top:3px">Total: ${S.exps.length} expediente(s)</div></div>${S.exps.length>0?`<button class="btn btn-success" onclick="exportToExcel()" style="display:flex;align-items:center;gap:6px"><span style="font-size:14px">📊</span> Exportar a Excel</button>`:''}</div>${S.exps.length===0?none:`<div style="overflow-x:auto"><table class="tbl" style="font-size:10.5px"><thead><tr>${['N° Juicio','Exp. Interno','Demandante','Sala','U. Admva.','Tipo Trámite','Abogado','F. Emplazamiento','F. Sentencia','Suspensión','Estatus'].map(h=>`<th style="font-size:8px">${h}</th>`).join('')}</tr></thead><tbody>${S.exps.map((e,i)=>`<tr style="background:${i%2?'#fafbfc':'white'}"><td style="font-weight:800;color:#1e3a5f">${esc(e.numeroJuicio)}</td><td style="color:#64748b">${esc(e.numeroExpedienteInterno)||'—'}</td><td style="max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(e.demandante)||'—'}</td><td>${esc(e.sala)||'—'}</td><td>${esc(e.unidadAdministrativa)||'—'}</td><td>${esc(e.tipoTramite)||'—'}</td><td>${esc(e.abogadoResponsable)||'—'}</td><td>${fd(e.fechaEmplazamiento)}</td><td>${fd(e.fechaSentencia)}</td><td><span style="font-size:10.5px;font-weight:800;padding:2px 7px;border-radius:999px;background:${e.suspension==='Sí'?'#fef3c7':'#f1f5f9'};color:${e.suspension==='Sí'?'#92400e':'#64748b'}">${esc(e.suspension)||'—'}</span></td><td>${bdg(e.estatus,true)}</td></tr>`).join('')}</tbody></table></div>`}`;
   }
   return `<div><div class="sbar"><div class="sbar-line"></div><span class="sbar-title">Reportes</span></div><div class="rtabs">${tabs.map(([id,l])=>`<button class="rtab${S.rep===id?' active':''}" onclick="S.rep='${id}';render()">${l}</button>`).join('')}</div><div class="card">${body}</div></div>`;
 }
@@ -1519,9 +1519,9 @@ function renderCambios(cambios) {
     if (typeof val !== 'object' || !val.antes) return '';
     return `<div style="margin-bottom:4px">
       <span style="font-weight:700;color:#334155">${esc(campo)}:</span>
-      <span style="background:#fee2e2;color:#991b1b;padding:1px 6px;border-radius:4px;font-size:10px;text-decoration:line-through">${esc(String(val.antes))}</span>
+      <span style="background:#fee2e2;color:#991b1b;padding:1px 6px;border-radius:4px;font-size:10.5px;text-decoration:line-through">${esc(String(val.antes))}</span>
       <span style="color:#94a3b8;margin:0 3px">→</span>
-      <span style="background:#d1fae5;color:#065f46;padding:1px 6px;border-radius:4px;font-size:10px">${esc(String(val.despues))}</span>
+      <span style="background:#d1fae5;color:#065f46;padding:1px 6px;border-radius:4px;font-size:10.5px">${esc(String(val.despues))}</span>
     </div>`;
   }).join('');
 }
@@ -1534,23 +1534,23 @@ function accionBdg(accion) {
     IMPORTAR: {bg:'#ede9fe',c:'#5b21b6',icon:'⬇'}
   };
   const x = map[accion] || {bg:'#f1f5f9',c:'#64748b',icon:'•'};
-  return `<span style="background:${x.bg};color:${x.c};font-weight:800;font-size:9px;padding:2px 8px;border-radius:999px;white-space:nowrap">${x.icon} ${accion}</span>`;
+  return `<span style="background:${x.bg};color:${x.c};font-weight:800;font-size:10.5px;padding:2px 8px;border-radius:999px;white-space:nowrap">${x.icon} ${accion}</span>`;
 }
 
 function rBitacoraList(rows) {
-  if (!rows.length) return '<div style="text-align:center;padding:44px 0"><div style="font-size:28px;margin-bottom:8px">📋</div><p style="color:#94a3b8;font-size:12px">No hay registros en la bitácora.</p></div>';
+  if (!rows.length) return '<div style="text-align:center;padding:44px 0"><div style="font-size:28px;margin-bottom:8px">📋</div><p style="color:#94a3b8;font-size:12.5px">No hay registros en la bitácora.</p></div>';
   return rows.map(r => `
     <div style="display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:start;padding:12px 0;border-bottom:1px solid #f1f5f9">
       <div style="display:flex;flex-direction:column;align-items:center;gap:5px;min-width:70px">
         ${accionBdg(r.accion)}
-        <span style="font-size:9px;color:#94a3b8;text-align:center;white-space:nowrap">${fmtFecha(r.fecha)}</span>
+        <span style="font-size:10.5px;color:#94a3b8;text-align:center;white-space:nowrap">${fmtFecha(r.fecha)}</span>
       </div>
       <div>
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;flex-wrap:wrap">
-          <span style="font-weight:900;font-size:11px;color:#1e3a5f">${esc(r.numero_juicio)||'—'}</span>
-          <span style="font-size:10px;color:#64748b;background:#f8fafc;padding:1px 7px;border-radius:4px">👤 ${esc(r.usuario)}</span>
+          <span style="font-weight:900;font-size:11.5px;color:#1e3a5f">${esc(r.numero_juicio)||'—'}</span>
+          <span style="font-size:10.5px;color:#64748b;background:#f8fafc;padding:1px 7px;border-radius:4px">👤 ${esc(r.usuario)}</span>
         </div>
-        <div style="font-size:10px;line-height:1.7">${renderCambios(r.cambios)}</div>
+        <div style="font-size:10.5px;line-height:1.7">${renderCambios(r.cambios)}</div>
       </div>
     </div>`).join('');
 }
@@ -1563,14 +1563,14 @@ function rBitacora() {
       <div class="sbar" style="margin-bottom:0">
         <div class="sbar-line"></div>
         <span class="sbar-title">Bitácora de Cambios</span>
-        ${rows.length ? `<span style="font-size:10px;font-weight:800;background:#dbeafe;color:#1e40af;padding:2px 9px;border-radius:999px">${rows.length}</span>` : ''}
+        ${rows.length ? `<span style="font-size:10.5px;font-weight:800;background:#dbeafe;color:#1e40af;padding:2px 9px;border-radius:999px">${rows.length}</span>` : ''}
       </div>
-      <button class="btn btn-secondary" onclick="refreshBitacora()" style="font-size:11px">↺ Actualizar</button>
+      <button class="btn btn-secondary" onclick="refreshBitacora()" style="font-size:11.5px">↺ Actualizar</button>
     </div>
     <div class="card">
-      <p style="font-size:10px;color:#94a3b8;margin-bottom:14px">Registro completo de quién creó, editó o eliminó cada expediente y qué campos cambiaron.</p>
+      <p style="font-size:10.5px;color:#94a3b8;margin-bottom:14px">Registro completo de quién creó, editó o eliminó cada expediente y qué campos cambiaron.</p>
       ${loading
-        ? '<div style="text-align:center;padding:32px;color:#94a3b8;font-size:12px">⏳ Cargando bitácora…</div>'
+        ? '<div style="text-align:center;padding:32px;color:#94a3b8;font-size:12.5px">⏳ Cargando bitácora…</div>'
         : rBitacoraList(rows)
       }
     </div>
@@ -1586,11 +1586,11 @@ async function refreshBitacora() {
 async function loadDetHistory(expedienteId) {
   const el = document.getElementById('detHistory');
   if (!el) return;
-  el.innerHTML = '<div style="text-align:center;padding:20px;color:#94a3b8;font-size:11px">⏳ Cargando historial…</div>';
+  el.innerHTML = '<div style="text-align:center;padding:20px;color:#94a3b8;font-size:11.5px">⏳ Cargando historial…</div>';
   const rows = await loadBitacora(expedienteId);
   el.innerHTML = rows.length
     ? rBitacoraList(rows)
-    : '<p style="color:#94a3b8;font-size:11px;text-align:center;padding:16px">Sin movimientos registrados para este expediente.</p>';
+    : '<p style="color:#94a3b8;font-size:11.5px;text-align:center;padding:16px">Sin movimientos registrados para este expediente.</p>';
 }
 
 // ════════════════════════════════════════════════════════════════
@@ -1616,7 +1616,7 @@ async function loadBoletin(){
 
 function boletinNavLabel(){
   const p = S.boletinHits.filter(h=>esBoletinRelevante(h) && !h.revisado).length;
-  return '📢 Boletín' + (p ? ` <span style="background:#ef4444;color:#fff;border-radius:999px;padding:0 6px;font-size:9px;font-weight:900">${p}</span>` : '');
+  return '📢 Boletín' + (p ? ` <span style="background:#ef4444;color:#fff;border-radius:999px;padding:0 6px;font-size:10.5px;font-weight:900">${p}</span>` : '');
 }
 
 function setBoletinFilter(f){ S.boletinFilter = f; render(); }
@@ -1671,11 +1671,11 @@ function rBoletin(){
   const mios  = rel.filter(h=>h.expediente_id).length;
   const arr   = boletinFiltrados();
   const f     = S.boletinFilter;
-  const chip=(id,l,n,col)=>`<button onclick="setBoletinFilter('${id}')" style="padding:6px 13px;border-radius:999px;border:1px solid ${f===id?col:'#e2e8f0'};background:${f===id?col:'#fff'};color:${f===id?'#fff':'#475569'};font-size:11px;font-weight:800;cursor:pointer;font-family:inherit">${l} (${n})</button>`;
+  const chip=(id,l,n,col)=>`<button onclick="setBoletinFilter('${id}')" style="padding:6px 13px;border-radius:999px;border:1px solid ${f===id?col:'#e2e8f0'};background:${f===id?col:'#fff'};color:${f===id?'#fff':'#475569'};font-size:11.5px;font-weight:800;cursor:pointer;font-family:inherit">${l} (${n})</button>`;
 
   const empty = !S.boletinLoaded
-    ? `<div style="text-align:center;padding:44px;color:#94a3b8;font-size:12px">⏳ Cargando novedades…</div>`
-    : `<div style="text-align:center;padding:44px"><div style="font-size:32px;margin-bottom:10px">📭</div><p style="color:#94a3b8;font-size:12px">No hay novedades para este filtro.</p>${total===0?'<p style="color:#cbd5e1;font-size:10px;margin-top:6px">Si el agente ya corrió y esto sigue vacío, revisa la política RLS de lectura sobre la tabla boletin_hits.</p>':''}</div>`;
+    ? `<div style="text-align:center;padding:44px;color:#94a3b8;font-size:12.5px">⏳ Cargando novedades…</div>`
+    : `<div style="text-align:center;padding:44px"><div style="font-size:32px;margin-bottom:10px">📭</div><p style="color:#94a3b8;font-size:12.5px">No hay novedades para este filtro.</p>${total===0?'<p style="color:#cbd5e1;font-size:10.5px;margin-top:6px">Si el agente ya corrió y esto sigue vacío, revisa la política RLS de lectura sobre la tabla boletin_hits.</p>':''}</div>`;
 
   const filas = arr.map(h=>{
     const rev = !!h.revisado;
@@ -1699,7 +1699,7 @@ function rBoletin(){
     <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:6px">
       <div>
         <b style="color:#0f2044;font-size:15px">📢 Novedades del Boletín Jurisdiccional (TFJA)</b>
-        <div style="font-size:11px;color:#94a3b8;margin-top:3px">Acuerdos que mencionan a CONAGUA / OCPBC en la Península. La notificación surte efectos al 3er día hábil siguiente a la publicación.</div>
+        <div style="font-size:11.5px;color:#94a3b8;margin-top:3px">Acuerdos que mencionan a CONAGUA / OCPBC en la Península. La notificación surte efectos al 3er día hábil siguiente a la publicación.</div>
       </div>
       <button class="btn btn-success" onclick="exportBoletin()" style="display:flex;align-items:center;gap:6px"><span style="font-size:14px">📊</span> Exportar CSV</button>
     </div>
@@ -1708,10 +1708,10 @@ function rBoletin(){
       ${chip('mios','Mis expedientes',mios,'#059669')}
       ${chip('todas','Todas',total,'#4338ca')}
     </div>
-    ${arr.length===0 ? empty : `<div style="overflow-x:auto"><table class="tbl" style="font-size:11px"><thead><tr>
-      <th style="font-size:9px">Fecha</th><th style="font-size:9px">Sala</th><th style="font-size:9px">Expediente</th><th style="font-size:9px">Demandado</th><th style="font-size:9px">Síntesis</th><th style="font-size:9px">Acciones</th>
+    ${arr.length===0 ? empty : `<div style="overflow-x:auto"><table class="tbl" style="font-size:11.5px"><thead><tr>
+      <th style="font-size:10.5px">Fecha</th><th style="font-size:10.5px">Sala</th><th style="font-size:10.5px">Expediente</th><th style="font-size:10.5px">Demandado</th><th style="font-size:10.5px">Síntesis</th><th style="font-size:10.5px">Acciones</th>
     </tr></thead><tbody>${filas}</tbody></table></div>
-    <div style="font-size:10px;color:#cbd5e1;margin-top:10px">Mostrando ${arr.length} de ${total} · ● = enlazado a un expediente tuyo</div>`}
+    <div style="font-size:10.5px;color:#cbd5e1;margin-top:10px">Mostrando ${arr.length} de ${total} · ● = enlazado a un expediente tuyo</div>`}
   </div>`;
 }
 
@@ -1816,25 +1816,25 @@ function rImportar(){
   const getOpts=(field)=>colOpts.replace(`value="${colMap[field]||''}"`,`value="${colMap[field]||''}" selected`);
   return`<div style="max-width:800px;margin:0 auto">
     <div class="sbar"><div class="sbar-line"></div><span class="sbar-title">Importar desde Excel</span>
-      <span style="font-size:11px;color:#64748b">· ${rows.length} filas · ${headers.length} columnas detectadas</span>
+      <span style="font-size:11.5px;color:#64748b">· ${rows.length} filas · ${headers.length} columnas detectadas</span>
     </div>
-    <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:12px;padding:14px 18px;margin-bottom:14px;font-size:12px;color:#1e40af;line-height:1.6">
+    <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:12px;padding:14px 18px;margin-bottom:14px;font-size:12.5px;color:#1e40af;line-height:1.6">
       <strong>Se detectaron ${headers.length} columnas y se mapearon automáticamente ${mapped}.</strong><br>
       Revisa el mapeo y ajusta los que estén incorrectos. <strong>Solo "N° de Juicio" es obligatorio.</strong><br>
       Si un N° de Juicio ya existe en el sistema, ese expediente se <strong>actualizará</strong> con los campos que traiga el archivo (los campos que dejes vacíos conservan su valor actual); si no existe, se dará de alta como nuevo.
     </div>
     <div class="card" style="padding:0;overflow:hidden">
-      <table style="width:100%;border-collapse:collapse;font-size:12px">
+      <table style="width:100%;border-collapse:collapse;font-size:12.5px">
         <thead><tr style="background:#0f2044;color:white">
-          <th style="padding:10px 14px;text-align:left;font-size:10px;font-weight:800;text-transform:uppercase;width:40%">Campo del sistema</th>
-          <th style="padding:10px 14px;text-align:left;font-size:10px;font-weight:800;text-transform:uppercase">Columna de tu Excel</th>
+          <th style="padding:10px 14px;text-align:left;font-size:10.5px;font-weight:800;text-transform:uppercase;width:40%">Campo del sistema</th>
+          <th style="padding:10px 14px;text-align:left;font-size:10.5px;font-weight:800;text-transform:uppercase">Columna de tu Excel</th>
         </tr></thead>
         <tbody>
-          ${SYS_FIELDS.map((f,i)=>{const isMapped=!!colMap[f.k];return`<tr style="border-bottom:1px solid #f8fafc;background:${i%2===0?'white':'#fafbfc'}"><td style="padding:8px 14px"><span style="font-weight:${f.req?800:600};color:${f.req?'#1e3a5f':'#374151'}">${f.l}</span>${f.req?'<span style="color:#dc2626;margin-left:2px;font-size:11px">*</span>':''}</td><td style="padding:8px 14px"><select style="width:100%;font-size:11px;border-radius:7px;padding:5px 8px;border:1px solid ${isMapped?'#86efac':'#e2e8f0'};background:${isMapped?'#f0fdf4':'white'};cursor:pointer" onchange="importData.colMap['${f.k}']=this.value===''?'':parseInt(this.value)||this.value;document.getElementById('importMain').innerHTML=document.getElementById('importMain').innerHTML">${getOpts(f.k)}</select></td></tr>`;}).join('')}
+          ${SYS_FIELDS.map((f,i)=>{const isMapped=!!colMap[f.k];return`<tr style="border-bottom:1px solid #f8fafc;background:${i%2===0?'white':'#fafbfc'}"><td style="padding:8px 14px"><span style="font-weight:${f.req?800:600};color:${f.req?'#1e3a5f':'#374151'}">${f.l}</span>${f.req?'<span style="color:#dc2626;margin-left:2px;font-size:11.5px">*</span>':''}</td><td style="padding:8px 14px"><select style="width:100%;font-size:11.5px;border-radius:7px;padding:5px 8px;border:1px solid ${isMapped?'#86efac':'#e2e8f0'};background:${isMapped?'#f0fdf4':'white'};cursor:pointer" onchange="importData.colMap['${f.k}']=this.value===''?'':parseInt(this.value)||this.value;document.getElementById('importMain').innerHTML=document.getElementById('importMain').innerHTML">${getOpts(f.k)}</select></td></tr>`;}).join('')}
         </tbody>
       </table>
       <div style="padding:16px 20px;border-top:1px solid #f1f5f9;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-        <span style="font-size:11px;color:#94a3b8">Columnas: ${headers.map(h=>`<strong>${esc(h.name)}</strong>`).join(', ')}</span>
+        <span style="font-size:11.5px;color:#94a3b8">Columnas: ${headers.map(h=>`<strong>${esc(h.name)}</strong>`).join(', ')}</span>
         <div style="margin-left:auto;display:flex;gap:8px">
           <button class="btn btn-secondary" onclick="importData=null;sv('lista')">Cancelar</button>
           <button class="btn btn-primary" onclick="doImport()">✓ Importar ${rows.length} expedientes</button>
@@ -2144,8 +2144,8 @@ function firmezaPanelHTML(e, editable) {
   return `<div class="firmeza-panel ${panelClass}" style="margin-top:10px">
     <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
       <span style="font-size:13px">⚖</span>
-      <span style="font-size:12px;font-weight:900;color:#0f2044">Firmeza y Cumplimiento (LFPCA)</span>
-      ${firmezaFutura ? '<span style="font-size:9px;font-weight:800;background:#e0f2fe;color:#0369a1;padding:2px 8px;border-radius:999px">Estimada</span>' : '<span style="font-size:9px;font-weight:800;background:#d1fae5;color:#065f46;padding:2px 8px;border-radius:999px">Vigente</span>'}
+      <span style="font-size:12.5px;font-weight:900;color:#0f2044">Firmeza y Cumplimiento (LFPCA)</span>
+      ${firmezaFutura ? '<span style="font-size:10.5px;font-weight:800;background:#e0f2fe;color:#0369a1;padding:2px 8px;border-radius:999px">Estimada</span>' : '<span style="font-size:10.5px;font-weight:800;background:#d1fae5;color:#065f46;padding:2px 8px;border-radius:999px">Vigente</span>'}
     </div>
     <div class="firmeza-grid">
       <div class="firmeza-item">
@@ -2154,7 +2154,7 @@ function firmezaPanelHTML(e, editable) {
         <span class="firmeza-sub">${e.fechaNotificacionSentencia ? 'Fecha notificación sentencia' : 'Fecha de sentencia (referencia)'}</span>
       </div>
       <div class="firmeza-item">
-        <span class="firmeza-lbl">Firmeza estimada <span style="font-weight:500;font-size:9px">(+15 días hábiles · Art. 63)</span></span>
+        <span class="firmeza-lbl">Firmeza estimada <span style="font-weight:500;font-size:10.5px">(+15 días hábiles · Art. 63)</span></span>
         ${editable
           ? `<input type="date" value="${e.fechaFirmeza||''}" onchange="sf('fechaFirmeza',this.value);recalcFirmeza()" style="font-size:13px;font-weight:900;color:#0f2044;border:none;border-bottom:2px solid #d4a017;background:transparent;padding:2px 0;width:100%;font-family:inherit">`
           : `<span class="firmeza-val">${fd(e.fechaFirmeza || cf.firmeza) || '—'}</span>`}
@@ -2162,17 +2162,17 @@ function firmezaPanelHTML(e, editable) {
       </div>
       ${cf.paraEf ? `
       <div class="firmeza-item" style="grid-column:1/-1">
-        <span class="firmeza-lbl">Vencimiento de cumplimiento <span style="font-weight:500;font-size:9px">(+4 meses · Art. 58)</span></span>
+        <span class="firmeza-lbl">Vencimiento de cumplimiento <span style="font-weight:500;font-size:10.5px">(+4 meses · Art. 58)</span></span>
         <span class="firmeza-val" style="font-size:15px;color:${diasC!==null&&diasC<=10?'#dc2626':diasC!==null&&diasC<=30?'#b45309':'#065f46'}">${fd(cf.cumpl) || '—'}</span>
         <span class="firmeza-sub">Art. 58 LFPCA — plazo para que la autoridad demandada emita la resolución</span>
         ${cumplBadge}
       </div>` : `
       <div class="firmeza-item" style="grid-column:1/-1">
         <span class="firmeza-lbl">Cumplimiento</span>
-        <span style="font-size:11px;color:#94a3b8;font-style:italic">No aplica — el efecto de la sentencia no implica plazo de cumplimiento (Art. 58 LFPCA)</span>
+        <span style="font-size:11.5px;color:#94a3b8;font-style:italic">No aplica — el efecto de la sentencia no implica plazo de cumplimiento (Art. 58 LFPCA)</span>
       </div>`}
     </div>
-    ${editable ? `<p style="font-size:10px;color:#94a3b8;margin-top:10px;border-top:1px solid rgba(0,0,0,.06);padding-top:8px">💡 La firmeza es editable. Si ya se interpuso recurso de revisión, ajusta la fecha manualmente una vez que sea resuelta. El campo se guarda con el expediente.</p>` : ''}
+    ${editable ? `<p style="font-size:10.5px;color:#94a3b8;margin-top:10px;border-top:1px solid rgba(0,0,0,.06);padding-top:8px">💡 La firmeza es editable. Si ya se interpuso recurso de revisión, ajusta la fecha manualmente una vez que sea resuelta. El campo se guarda con el expediente.</p>` : ''}
   </div>`;
 }
 
@@ -2238,7 +2238,7 @@ function renderNotifBanner() {
       <div class="notif-title">🔔 ${evs.length} alerta${evs.length!==1?'s':''} hoy</div>
       <div class="notif-chips">
         ${show.map(e=>`<span class="notif-chip ${e.tipo==='red'?'nc-red':'nc-yellow'}" onclick="showDet('${e.expId}')">${esc(e.msg)}</span>`).join('')}
-        ${evs.length > 8 ? `<span style="font-size:10px;color:#fde68a;align-self:center">+${evs.length-8} más</span>` : ''}
+        ${evs.length > 8 ? `<span style="font-size:10.5px;color:#fde68a;align-self:center">+${evs.length-8} más</span>` : ''}
       </div>
     </div>
     <button onclick="S.notifDismissed=true;render()" style="background:none;border:none;color:#93c5fd;font-size:20px;cursor:pointer;line-height:1;padding:2px;flex-shrink:0">×</button>
@@ -2301,7 +2301,7 @@ function rCalendario() {
           return `<div class="cal-cell${other?' other':''}${isTd?' today':''}">
             <div class="cal-num">${d.getDate()}</div>
             ${evs.slice(0,3).map(ev=>`<span class="cal-ev ${ev.cls}" onclick="showDet('${ev.expId}')" title="${esc(ev.lbl)}">${esc(ev.lbl)}</span>`).join('')}
-            ${evs.length>3 ? `<span style="font-size:9px;color:#94a3b8;font-weight:700">+${evs.length-3}</span>` : ''}
+            ${evs.length>3 ? `<span style="font-size:10.5px;color:#94a3b8;font-weight:700">+${evs.length-3}</span>` : ''}
           </div>`;
         }).join('')}
       </div>
@@ -2346,10 +2346,10 @@ function rTareas(e) {
   const wr     = canWrite();
   return `<div>
     <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
-      <span style="font-size:10px;font-weight:800;background:#fef3c7;color:#92400e;padding:2px 10px;border-radius:999px">${pend} pendiente${pend!==1?'s':''}</span>
-      <span style="font-size:10px;font-weight:800;background:#d1fae5;color:#065f46;padding:2px 10px;border-radius:999px">${done} completada${done!==1?'s':''}</span>
+      <span style="font-size:10.5px;font-weight:800;background:#fef3c7;color:#92400e;padding:2px 10px;border-radius:999px">${pend} pendiente${pend!==1?'s':''}</span>
+      <span style="font-size:10.5px;font-weight:800;background:#d1fae5;color:#065f46;padding:2px 10px;border-radius:999px">${done} completada${done!==1?'s':''}</span>
     </div>
-    ${tareas.length===0 ? `<div style="text-align:center;padding:30px 0"><div style="font-size:28px;margin-bottom:8px">✅</div><p style="color:#94a3b8;font-size:12px">Sin tareas registradas.</p></div>` :
+    ${tareas.length===0 ? `<div style="text-align:center;padding:30px 0"><div style="font-size:28px;margin-bottom:8px">✅</div><p style="color:#94a3b8;font-size:12.5px">Sin tareas registradas.</p></div>` :
       tareas.map(t => {
         const ti = TT_MAP[t.tipo||'general'];
         return `<div class="tarea-item${t.completada?' done':''}">
@@ -2375,7 +2375,7 @@ function rTareas(e) {
       <button class="btn btn-primary btn-sm" onclick="doAddTarea('${e.id}')">+ Agregar</button>
     </div>
     <div style="margin-top:10px;border-top:1px solid #f1f5f9;padding-top:8px">
-      <p style="font-size:10px;color:#94a3b8;font-weight:700;margin-bottom:6px">Plantillas rápidas:</p>
+      <p style="font-size:10.5px;color:#94a3b8;font-weight:700;margin-bottom:6px">Plantillas rápidas:</p>
       <div class="tmpl-grid">
         ${TMPL.map(([t,ti])=>`<button class="btn btn-secondary btn-sm" onclick="doAddTareaQ('${e.id}','${t}','${ti}')">${t}</button>`).join('')}
       </div>
@@ -2434,10 +2434,10 @@ function rDocumentos(e) {
   const wr      = canWrite();
   const eid     = e.id;
 
-  if (loading) return `<div style="text-align:center;padding:30px;color:#94a3b8;font-size:12px">⏳ Cargando documentos…</div>`;
+  if (loading) return `<div style="text-align:center;padding:30px;color:#94a3b8;font-size:12.5px">⏳ Cargando documentos…</div>`;
 
   const docList = Array.isArray(docs)
-    ? (docs.length===0 ? `<div style="text-align:center;padding:20px"><div style="font-size:26px;margin-bottom:8px">📂</div><p style="color:#94a3b8;font-size:12px">No hay documentos adjuntos.</p></div>`
+    ? (docs.length===0 ? `<div style="text-align:center;padding:20px"><div style="font-size:26px;margin-bottom:8px">📂</div><p style="color:#94a3b8;font-size:12.5px">No hay documentos adjuntos.</p></div>`
       : docs.map(doc => {
           const ext  = (doc.name.split('.').pop()||'').toLowerCase();
           const icon = {pdf:'📄',doc:'📝',docx:'📝',png:'🖼',jpg:'🖼',jpeg:'🖼',xlsx:'📊',xls:'📊'}[ext] || '📎';
@@ -2464,12 +2464,12 @@ function rDocumentos(e) {
       ondragleave="this.classList.remove('drag-over')"
       ondrop="event.preventDefault();this.classList.remove('drag-over');uploadDoc('${eid}',event.dataTransfer.files[0])">
       <div style="font-size:22px;margin-bottom:5px">📎</div>
-      <p style="font-size:12px;font-weight:700;color:#374151">Arrastra un archivo o haz clic para seleccionar</p>
-      <p style="font-size:10px;color:#94a3b8;margin-top:3px">PDF, Word, Excel, imágenes · Máx 10 MB</p>
+      <p style="font-size:12.5px;font-weight:700;color:#374151">Arrastra un archivo o haz clic para seleccionar</p>
+      <p style="font-size:10.5px;color:#94a3b8;margin-top:3px">PDF, Word, Excel, imágenes · Máx 10 MB</p>
     </div>
     <input type="file" id="fInp_${eid}" style="display:none" accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg" onchange="uploadDoc('${eid}',this.files[0]);this.value=''">` : ''}
     <div>${docList}</div>
-    <div style="margin-top:10px;padding:7px 11px;background:#f8fafc;border-radius:8px;font-size:10px;color:#94a3b8;line-height:1.5">
+    <div style="margin-top:10px;padding:7px 11px;background:#f8fafc;border-radius:8px;font-size:10.5px;color:#94a3b8;line-height:1.5">
       💡 Requiere bucket <b>docs-juicios</b> en Supabase Storage con políticas de lectura/escritura para usuarios autenticados.
     </div>
   </div>`;
@@ -2550,7 +2550,7 @@ function rTimeline(e) {
     add(t.completadaEn.slice(0,10), '✅', 'Tarea completada: '+t.titulo, '', '#059669');
   });
 
-  if (!evs.length) return `<div style="text-align:center;padding:30px 0"><div style="font-size:28px;margin-bottom:8px">📊</div><p style="color:#94a3b8;font-size:12px">No hay actuaciones con fecha registrada.</p></div>`;
+  if (!evs.length) return `<div style="text-align:center;padding:30px 0"><div style="font-size:28px;margin-bottom:8px">📊</div><p style="color:#94a3b8;font-size:12.5px">No hay actuaciones con fecha registrada.</p></div>`;
 
   evs.sort((a,b)=>a.date.localeCompare(b.date));
 
