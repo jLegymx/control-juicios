@@ -1,0 +1,319 @@
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,-apple-system,sans-serif;background:#f8fafc;color:#1e293b;min-height:100vh}
+.header{background:#0f2044;color:white;position:sticky;top:0;z-index:50}
+.header-top{padding:12px 20px;display:flex;align-items:center;gap:12px}
+.logo{width:36px;height:36px;border-radius:9px;background:#d4a017;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0}
+.nav{display:flex;border-top:1px solid rgba(255,255,255,0.1);padding:0 20px}
+.nav button{padding:9px 14px;font-size:11px;font-weight:700;background:none;border:none;color:#93c5fd;cursor:pointer;border-bottom:2px solid transparent;font-family:inherit}
+.nav button.active{color:#fbbf24;border-bottom-color:#fbbf24}
+.nav button:hover:not(.active){color:white}
+.main{padding:20px;max-width:1200px;margin:0 auto}
+.card{background:white;border-radius:12px;border:1px solid #f1f5f9;padding:20px}
+.tbl{width:100%;border-collapse:collapse;font-size:11px}
+.tbl th{background:#0f2044;color:white;padding:9px 10px;text-align:left;font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;white-space:nowrap}
+.tbl td{padding:8px 10px;border-bottom:1px solid #f8fafc;vertical-align:top}
+.tbl tbody tr:nth-child(even) td{background:#fafbfc}
+.tbl tbody tr:hover td{background:#eff6ff}
+/* Columnas fijas (sticky) para no perder de vista el expediente ni las
+   acciones al desplazarse horizontalmente por tablas con muchas columnas */
+.sticky-col{position:sticky;z-index:2;background:#fff}
+.tbl thead .sticky-col{background:#0f2044}
+.sticky-col.edge-l{box-shadow:6px 0 6px -6px rgba(15,23,42,.18)}
+.sticky-col.edge-r{box-shadow:-6px 0 6px -6px rgba(15,23,42,.18)}
+.tbl tbody tr.sel td{background:#eff6ff}
+/* Navegación horizontal: barra con flechas + arrastre + scrollbar visible */
+.tbl-nav{display:flex;justify-content:flex-end;gap:5px;padding:6px 10px;border-bottom:1px solid #f1f5f9;background:#fafbfc}
+.tbl-nav-btn{width:25px;height:25px;border-radius:6px;border:1px solid #d1d5db;background:white;color:#374151;font-size:13px;font-weight:900;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;font-family:inherit;transition:background .1s}
+.tbl-nav-btn:hover{background:#f1f5f9}
+.tbl-scroll{overflow-x:auto;cursor:grab}
+.tbl-scroll.grabbing{cursor:grabbing;user-select:none}
+.tbl-scroll::-webkit-scrollbar{height:9px}
+.tbl-scroll::-webkit-scrollbar-track{background:#f1f5f9}
+.tbl-scroll::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:5px}
+.tbl-scroll::-webkit-scrollbar-thumb:hover{background:#94a3b8}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.span2{grid-column:1/-1}
+.lbl{display:block;font-size:10px;font-weight:800;color:#64748b;text-transform:uppercase;letter-spacing:.07em;margin-bottom:4px}
+input,select,textarea{width:100%;border:1px solid #d1d5db;border-radius:8px;padding:8px 11px;font-size:12px;font-family:inherit;color:#111827;background:white;outline:none}
+input:focus,select:focus,textarea:focus{border-color:#3b82f6;box-shadow:0 0 0 2px rgba(59,130,246,.15)}
+textarea{min-height:70px;resize:vertical}
+.btn{padding:8px 18px;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;transition:opacity .15s}
+.btn:hover{opacity:.88}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn-primary{background:#0f2044;color:white}
+.btn-secondary{background:white;border:1px solid #d1d5db;color:#374151}
+.btn-danger{background:#dc2626;color:white}
+.btn-success{background:#059669;color:white}
+.btn-sm{padding:4px 12px;font-size:11px}
+.st{display:flex;align-items:center;gap:10px;margin:18px 0 10px}
+.st span{font-size:10px;font-weight:900;color:#0f2044;text-transform:uppercase;letter-spacing:.12em;white-space:nowrap}
+.st hr{flex:1;border:none;border-top:1px solid #e2e8f0}
+.dr{display:flex;gap:10px;padding:6px 0;border-bottom:1px solid #f1f5f9}
+.dl{width:190px;flex-shrink:0;font-size:10px;font-weight:800;color:#94a3b8;text-transform:uppercase;letter-spacing:.05em;padding-top:1px}
+.dv{font-size:12px;color:#1e293b;flex:1}
+.badge{display:inline-block;font-size:10px;font-weight:800;padding:3px 10px;border-radius:999px}
+.badge-sm{padding:2px 7px;font-size:9px}
+.toast{padding:10px 20px;font-size:12px;font-weight:700;color:white;display:none;position:fixed;top:0;left:0;right:0;z-index:300;text-align:center}
+.toast-ok{background:#059669}.toast-err{background:#dc2626}.toast-warn{background:#d97706}
+.rtabs{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.rtab{padding:6px 14px;border-radius:9px;font-size:11px;font-weight:800;cursor:pointer;border:1px solid #e2e8f0;background:white;color:#374151;font-family:inherit}
+.rtab.active{background:#0f2044;color:white;border-color:#0f2044}
+.mt-wrap{border-radius:10px;border:1px solid #f1f5f9;overflow:hidden;margin-top:6px;overflow-x:auto}
+.mt{width:100%;border-collapse:collapse;font-size:11px}
+.mt th{background:#f8fafc;padding:6px 10px;text-align:left;font-size:9px;font-weight:800;color:#94a3b8;text-transform:uppercase;white-space:nowrap}
+.mt td{padding:6px 10px;border-top:1px solid #f8fafc;white-space:nowrap}
+.sbar{display:flex;align-items:center;gap:8px;margin-bottom:14px}
+.sbar-line{width:3px;height:22px;background:#d4a017;border-radius:2px}
+.sbar-title{font-weight:900;font-size:15px;color:#0f2044}
+.confirm-box{margin-top:6px;background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:8px 10px}
+.link-btn{background:none;border:none;cursor:pointer;font-family:inherit;font-weight:800}
+.empty{text-align:center;padding:50px}
+.empty-icon{font-size:36px;margin-bottom:10px}
+.file-bar{background:#1e3a5f;padding:5px 20px;display:flex;align-items:center;gap:8px;font-size:10px;color:#93c5fd;flex-wrap:wrap}
+.dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.dot-green{background:#4ade80}.dot-gray{background:#64748b}.dot-yellow{background:#fbbf24}
+/* Dashboard — estilo corporativo legal (EB Garamond + Lato, navy/gold) */
+.dash{background:linear-gradient(180deg,#fff 0%,#fbfbfa 100%);border-radius:10px;border:1px solid #e2e8f0;border-top:3px solid #0f2044;padding:20px 26px;margin-bottom:18px;display:flex;align-items:center;gap:24px;flex-wrap:wrap;box-shadow:0 1px 3px rgba(15,32,68,.06)}
+.dash-info{flex:1;min-width:220px}
+.dash-date{font-family:'EB Garamond',Georgia,serif;font-size:20px;font-weight:600;color:#0f2044;text-transform:capitalize;display:flex;align-items:center;gap:9px;letter-spacing:.01em}
+.dash-date svg{flex-shrink:0;color:#d4a017}
+.dash-rem{font-family:'Lato',system-ui,sans-serif;font-size:11px;color:#64748b;margin-top:5px;display:flex;align-items:center;gap:7px;letter-spacing:.01em}
+.dash-rem svg{flex-shrink:0;color:#94a3b8}
+.dash-metrics{display:flex;gap:10px;flex-wrap:wrap}
+.metric{font-family:'Lato',system-ui,sans-serif;padding:10px 16px;border-radius:6px;min-width:82px;text-align:center;background:#fff;border:1px solid #e2e8f0;border-left:3px solid #cbd5e1;box-shadow:0 1px 2px rgba(15,23,42,.04);transition:box-shadow .2s,transform .2s;cursor:pointer}
+.metric:hover{box-shadow:0 3px 8px rgba(15,23,42,.08);transform:translateY(-1px)}
+.dmodal-bg{position:fixed;inset:0;background:rgba(15,32,68,.55);z-index:150;display:flex;align-items:flex-start;justify-content:center;padding:40px 20px;overflow-y:auto}
+.dmodal{font-family:'Lato',system-ui,sans-serif;background:white;border-radius:12px;max-width:940px;width:100%;padding:22px;box-shadow:0 20px 60px rgba(0,0,0,.3)}
+.dmodal-hd{display:flex;align-items:start;justify-content:space-between;margin-bottom:14px;gap:10px}
+.dmodal-close{background:#f1f5f9;border:none;border-radius:8px;width:30px;height:30px;cursor:pointer;font-size:14px;color:#64748b;flex-shrink:0}
+.dmodal-close:hover{background:#e2e8f0}
+.metric-num{font-size:19px;font-weight:900;line-height:1;color:#0f2044}
+.metric-lbl{font-size:8.5px;font-weight:800;text-transform:uppercase;letter-spacing:.07em;margin-top:4px;color:#64748b}
+.m-urg{border-left-color:#dc2626}
+.m-urg .metric-num{color:#991b1b}
+.m-urg.zero{border-left-color:#e2e8f0}
+.m-urg.zero .metric-num{color:#94a3b8}
+.m-today{border-left-color:#d4a017}
+.m-today .metric-num{color:#92400e}
+.m-today.zero{border-left-color:#e2e8f0}
+.m-today.zero .metric-num{color:#94a3b8}
+.m-week{border-left-color:#1e40af}
+.m-week .metric-num{color:#1e40af}
+.m-total{border-left-color:#0f2044}
+.m-plazo-venc{border-left-color:#dc2626}
+.m-plazo-venc .metric-num{color:#991b1b}
+.m-plazo-venc.zero{border-left-color:#e2e8f0}
+.m-plazo-venc.zero .metric-num{color:#94a3b8}
+.m-plazo-prox{border-left-color:#d4a017}
+.m-plazo-prox .metric-num{color:#9a3412}
+.m-plazo-prox.zero{border-left-color:#e2e8f0}
+.m-plazo-prox.zero .metric-num{color:#94a3b8}
+.m-plazo-proc{border-left-color:#1e40af}
+.m-plazo-proc .metric-num{color:#1e40af}
+.m-plazo-proc.zero{border-left-color:#e2e8f0}
+.m-plazo-proc.zero .metric-num{color:#94a3b8}
+/* Plazo contestación badges en tabla */
+.plazo-badge{display:inline-flex;align-items:center;gap:3px;font-size:9px;font-weight:800;padding:2px 7px;border-radius:999px;white-space:nowrap}
+.plazo-venc{background:#fee2e2;color:#991b1b}
+.plazo-prox{background:#ffedd5;color:#9a3412}
+.plazo-proc{background:#dbeafe;color:#1e40af}
+.plazo-ok{background:#d1fae5;color:#065f46}
+/* Priority badges */
+.prio{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:800;padding:3px 9px;border-radius:999px;white-space:nowrap}
+.prio-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.prio-bar{display:inline-block;width:4px;height:18px;border-radius:2px;vertical-align:middle}
+/* Login screen */
+#loginScreen{position:fixed;inset:0;background:#0f2044;display:flex;align-items:center;justify-content:center;z-index:200;padding:20px}
+.wcard{background:white;border-radius:20px;padding:36px;max-width:420px;width:100%;text-align:center}
+.wlogo{width:60px;height:60px;border-radius:14px;background:#d4a017;display:flex;align-items:center;justify-content:center;font-size:28px;margin:0 auto 18px}
+.wtitle{font-size:19px;font-weight:900;color:#0f2044;margin-bottom:8px}
+.wsub{font-size:12px;color:#64748b;margin-bottom:24px;line-height:1.6}
+.wnote{font-size:11px;color:#94a3b8;margin-top:16px;line-height:1.5;min-height:18px}
+/* Loading overlay */
+#loadingOverlay{display:none;position:fixed;inset:0;background:rgba(15,32,68,.55);z-index:100;align-items:center;justify-content:center}
+.spinner{width:40px;height:40px;border:4px solid rgba(255,255,255,.2);border-top-color:#fbbf24;border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+/* Readonly ribbon */
+.readonly-bar{background:#1e3a5f;border-left:3px solid #fbbf24;padding:7px 20px;font-size:10px;color:#fde68a;font-weight:700;display:flex;align-items:center;gap:8px}
+/* Atendidos banner */
+.aten-banner{background:white;border-radius:14px;border:1px solid #bbf7d0;border-left:4px solid #059669;padding:14px 20px;margin-bottom:16px}
+.aten-header{display:flex;align-items:center;gap:10px;cursor:pointer;user-select:none}
+.aten-icon{width:30px;height:30px;border-radius:8px;background:#d1fae5;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.aten-title{font-weight:900;font-size:13px;color:#065f46;flex:1}
+.aten-count{font-size:10px;font-weight:800;background:#d1fae5;color:#065f46;padding:2px 10px;border-radius:999px;margin-right:6px}
+.aten-chevron{font-size:11px;color:#059669;transition:transform .2s}
+.aten-chevron.open{transform:rotate(180deg)}
+.aten-body{margin-top:12px;border-top:1px solid #d1fae5;padding-top:10px;overflow:hidden}
+.aten-row{display:grid;grid-template-columns:140px 1fr 1fr 1fr;gap:6px;align-items:start;padding:7px 8px;border-radius:8px;font-size:11px;border-bottom:1px solid #f0fdf4}
+.aten-row:last-child{border-bottom:none}
+.aten-row:hover{background:#f0fdf4}
+.aten-num{font-weight:800;color:#0f2044;font-size:11px}
+.aten-oficio{display:flex;flex-direction:column;gap:1px}
+.aten-oficio-lbl{font-size:9px;font-weight:800;color:#94a3b8;text-transform:uppercase;letter-spacing:.05em}
+.aten-oficio-val{font-size:10px;color:#065f46;font-weight:700}
+.aten-oficio-date{font-size:9px;color:#94a3b8}
+.aten-oficio-empty{font-size:10px;color:#d1d5db;font-style:italic}
+.m-aten{border-left-color:#059669}
+.m-aten .metric-num{color:#065f46}
+.m-aten.zero{border-left-color:#e2e8f0}
+.m-aten.zero .metric-num{color:#94a3b8}
+/* ── Notificaciones ─────────────────────────────────────────── */
+.notif-banner{background:#1e3a5f;border-left:4px solid #fbbf24;padding:10px 20px;display:flex;align-items:flex-start;gap:12px;flex-wrap:wrap;position:sticky;top:0;z-index:40}
+.notif-body{flex:1;min-width:0}
+.notif-title{font-size:11px;font-weight:900;color:#fbbf24;margin-bottom:6px;display:flex;align-items:center;gap:6px}
+.notif-chips{display:flex;gap:5px;flex-wrap:wrap}
+.notif-chip{font-size:10px;font-weight:800;padding:3px 9px;border-radius:999px;cursor:pointer;white-space:nowrap}
+.nc-red{background:#fef2f2;color:#dc2626}.nc-red:hover{background:#fee2e2}
+.nc-yellow{background:#fefce8;color:#854d0e}.nc-yellow:hover{background:#fef9c3}
+.nc-blue{background:#eff6ff;color:#1d4ed8}.nc-blue:hover{background:#dbeafe}
+/* ── Calendario ─────────────────────────────────────────────── */
+.cal-wrap{background:white;border-radius:14px;border:1px solid #f1f5f9;padding:20px}
+.cal-nav{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.cal-nav-btn{background:white;border:1px solid #e2e8f0;border-radius:7px;padding:5px 14px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;color:#374151;transition:background .1s}
+.cal-nav-btn:hover{background:#f8fafc}
+.cal-month-title{font-size:16px;font-weight:900;color:#0f2044;flex:1;text-align:center;text-transform:capitalize}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
+.cal-head{text-align:center;font-size:9px;font-weight:900;color:#94a3b8;text-transform:uppercase;letter-spacing:.07em;padding:5px 0}
+.cal-cell{min-height:76px;border:1px solid #f1f5f9;border-radius:7px;padding:4px 5px;background:white;position:relative}
+.cal-cell.other{opacity:.38;pointer-events:none}
+.cal-cell.today{border-color:#3b82f6;border-width:2px}
+.cal-cell.has-ev{cursor:default}
+.cal-num{font-size:11px;font-weight:800;color:#475569;line-height:1;margin-bottom:3px}
+.cal-cell.today .cal-num{color:#2563eb}
+.cal-ev{font-size:9px;font-weight:700;padding:1px 4px;border-radius:4px;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer;display:block}
+.cal-ev:hover{opacity:.8}
+.ev-a{background:#dbeafe;color:#1e40af}
+.ev-c{background:#fee2e2;color:#991b1b}
+.ev-e{background:#fef3c7;color:#92400e}
+.ev-s{background:#d1fae5;color:#065f46}
+.ev-x{background:#ffedd5;color:#9a3412}
+.ev-o{background:#ede9fe;color:#5b21b6}
+.cal-legend{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;padding-top:12px;border-top:1px solid #f1f5f9}
+.cal-leg{display:flex;align-items:center;gap:4px;font-size:10px;font-weight:700;color:#374151}
+.cal-leg-dot{width:11px;height:11px;border-radius:3px;flex-shrink:0}
+/* ── Tabs detalle ───────────────────────────────────────────── */
+.det-tabs{display:flex;gap:0;border-bottom:2px solid #f1f5f9;margin-bottom:16px;overflow-x:auto}
+.det-tab{padding:8px 16px;font-size:11px;font-weight:800;cursor:pointer;border:none;background:none;font-family:inherit;color:#94a3b8;border-bottom:2px solid transparent;margin-bottom:-2px;white-space:nowrap;transition:color .15s}
+.det-tab.active{color:#0f2044;border-bottom-color:#d4a017}
+.det-tab:hover:not(.active){color:#475569}
+/* ── Tareas ─────────────────────────────────────────────────── */
+.tarea-item{display:flex;align-items:flex-start;gap:10px;padding:9px 10px;border-radius:8px;border:1px solid #f1f5f9;margin-bottom:5px;transition:background .1s}
+.tarea-item:hover{background:#f8fafc}
+.tarea-item.done{opacity:.55}
+.tarea-cb{width:16px;height:16px;cursor:pointer;flex-shrink:0;margin-top:2px;accent-color:#059669}
+.tarea-info{flex:1;min-width:0}
+.tarea-titulo{font-size:12px;font-weight:700;color:#1e293b}
+.tarea-item.done .tarea-titulo{text-decoration:line-through;color:#94a3b8}
+.tarea-meta{font-size:10px;color:#94a3b8;margin-top:3px;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.tarea-bdg{font-size:9px;font-weight:800;padding:2px 7px;border-radius:999px}
+.tarea-add-row{display:flex;gap:7px;margin-top:10px;flex-wrap:wrap;align-items:center}
+.tmpl-grid{display:flex;gap:5px;flex-wrap:wrap;margin-top:7px}
+/* ── Documentos ─────────────────────────────────────────────── */
+.drop-zone{border:2px dashed #d1d5db;border-radius:10px;padding:22px;text-align:center;cursor:pointer;transition:all .2s;background:white;margin-bottom:12px}
+.drop-zone:hover,.drop-zone.drag-over{border-color:#3b82f6;background:#eff6ff}
+.doc-item{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;border:1px solid #f1f5f9;margin-bottom:5px;background:white;transition:background .1s}
+.doc-item:hover{background:#f8fafc}
+.doc-icon{width:32px;height:32px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;background:#f1f5f9}
+.doc-info{flex:1;min-width:0}
+.doc-name{font-size:12px;font-weight:700;color:#1e293b;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.doc-meta{font-size:10px;color:#94a3b8;margin-top:2px}
+/* ── Timeline ───────────────────────────────────────────────── */
+.tl{padding:6px 0}
+.tl-row{display:flex;gap:14px;position:relative}
+.tl-axis{display:flex;flex-direction:column;align-items:center;width:28px;flex-shrink:0}
+.tl-dot{width:12px;height:12px;border-radius:50%;border:2px solid white;box-shadow:0 0 0 2px;flex-shrink:0;margin-top:3px}
+.tl-line{width:2px;flex:1;background:#e2e8f0;margin:2px 0 0}
+.tl-row:last-child .tl-line{display:none}
+.tl-body{flex:1;padding-bottom:18px}
+.tl-fecha{font-size:10px;font-weight:800;color:#94a3b8;text-transform:uppercase;letter-spacing:.04em}
+.tl-label{font-size:12px;font-weight:800;color:#1e293b;margin-top:2px}
+.tl-sub{font-size:11px;color:#64748b;margin-top:2px}
+/* ── Firmeza / Cumplimiento ─────────────────────────────────── */
+.firmeza-panel{border-radius:10px;border:1px solid;padding:14px 16px;margin-top:10px}
+.firmeza-panel.normal{background:#f0fdf4;border-color:#bbf7d0}
+.firmeza-panel.warn{background:#fefce8;border-color:#fde047}
+.firmeza-panel.urgent{background:#fef2f2;border-color:#fecaca}
+.firmeza-panel.neutral{background:#f8fafc;border-color:#e2e8f0}
+.firmeza-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:10px}
+.firmeza-item{display:flex;flex-direction:column;gap:3px}
+.firmeza-lbl{font-size:9px;font-weight:900;color:#94a3b8;text-transform:uppercase;letter-spacing:.07em}
+.firmeza-val{font-size:13px;font-weight:900;color:#0f2044}
+.firmeza-sub{font-size:10px;color:#64748b;margin-top:1px}
+.cumpl-badge{display:inline-flex;align-items:center;gap:5px;font-size:10px;font-weight:800;padding:4px 12px;border-radius:999px;margin-top:8px}
+.cumpl-verde{background:#d1fae5;color:#065f46}
+.cumpl-amarillo{background:#fef9c3;color:#713f12}
+.cumpl-rojo{background:#fee2e2;color:#991b1b}
+.dias-chip{font-size:9px;font-weight:700;padding:2px 7px;border-radius:999px;margin-left:4px}
+.m-cumpl{border-left-color:#d4a017}
+.m-cumpl .metric-num{color:#92400e}
+.m-cumpl.zero{border-left-color:#e2e8f0}
+.m-cumpl.zero .metric-num{color:#94a3b8}
+.m-cumpl.urgent{border-left-color:#dc2626}
+.m-cumpl.urgent .metric-num{color:#991b1b}
+/* Plazo info box */
+.plazo-info{margin-top:6px;padding:8px 11px;border-radius:7px;font-size:10.5px;line-height:1.45}
+.plazo-info.contencioso{background:#fef3c7;color:#78350f;border-left:3px solid #d97706}
+.plazo-info.agrario{background:#d1fae5;color:#065f46;border-left:3px solid #059669}
+.plazo-info.warn{background:#fee2e2;color:#991b1b;border-left:3px solid #dc2626}
+.plazo-info b{font-weight:800}
+.plazo-info .law{display:block;font-size:9px;opacity:.85;margin-top:3px;font-style:italic}
+.plazo-info .pf{display:inline-block;background:rgba(255,255,255,.55);padding:1px 6px;border-radius:4px;font-weight:800;margin:0 2px}
+/* etiqueta de tipo de oficio (sólo visible en móvil) */
+.aten-oficio-tag{display:none;font-size:8px;font-weight:900;color:#94a3b8;text-transform:uppercase;letter-spacing:.06em}
+/* ───────────────────────────────────────────────────────────── */
+/* RESPONSIVE — tablet y teléfono                                  */
+/* ───────────────────────────────────────────────────────────── */
+@media (max-width:820px){
+  .main{padding:14px}
+  .grid2,.firmeza-grid{grid-template-columns:1fr}
+  .header-top{flex-wrap:wrap;row-gap:8px;padding:11px 15px}
+  .nav{overflow-x:auto;-webkit-overflow-scrolling:touch;padding:0 10px}
+  .nav::-webkit-scrollbar{height:0}
+  .nav button{white-space:nowrap;flex:0 0 auto}
+  .notif-banner,.file-bar,.readonly-bar{padding-left:15px;padding-right:15px}
+}
+@media (max-width:560px){
+  body{font-size:14px}
+  .main{padding:11px}
+  .card{padding:14px;border-radius:10px}
+  /* Encabezado compacto */
+  .logo{width:32px;height:32px;font-size:15px}
+  .header-top>div:nth-child(2){flex:1;min-width:0}
+  /* Métricas del dashboard: rejilla de 3 columnas, táctil */
+  .dash{padding:13px 15px;gap:13px}
+  .dash-info{min-width:0}
+  .dash-date{font-size:15px}
+  .dash-metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;width:100%}
+  .metric{min-width:0;padding:9px 4px}
+  .metric-num{font-size:16px}
+  .metric-lbl{font-size:7.5px;letter-spacing:0}
+  /* Filas de detalle apiladas (etiqueta arriba, valor abajo) */
+  .dr{flex-direction:column;gap:1px;padding:7px 0}
+  .dl{width:auto;padding-top:0;font-size:9px}
+  .dv{font-size:13px}
+  /* Sección "Atendidos": tarjetas apiladas con etiqueta por campo */
+  .aten-head-row{display:none!important}
+  .aten-row{grid-template-columns:1fr;gap:8px;padding:11px 9px;border:1px solid #d1fae5;border-radius:9px;margin-bottom:7px}
+  .aten-oficio-tag{display:block;margin-bottom:1px}
+  .aten-title{font-size:12px}
+  /* Barra de herramientas de la lista a ancho completo */
+  #listaFilter{width:100%!important;flex:1 1 100%}
+  /* Calendario más compacto */
+  .cal-wrap{padding:13px}
+  .cal-grid{gap:2px}
+  .cal-cell{min-height:54px;padding:3px 3px}
+  .cal-num{font-size:10px}
+  .cal-ev{font-size:8px;padding:1px 3px}
+  .cal-month-title{font-size:14px}
+  .cal-nav-btn{padding:5px 10px}
+  /* Línea de tiempo y firmeza */
+  .firmeza-panel{padding:12px 13px}
+  /* Login */
+  .wcard{padding:26px 22px;border-radius:16px}
+  /* Tablas densas: desplazamiento horizontal suave (la página no se ensancha) */
+  .tbl{font-size:11px}
+  .det-tab{padding:8px 12px}
+}
+@media (max-width:380px){
+  .dash-metrics{grid-template-columns:repeat(2,1fr)}
+}
