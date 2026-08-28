@@ -11,7 +11,7 @@ const SUPABASE_ANON_KEY = 'sb_publishable_Ne9opVMzKFWXvl3w5p3hCg_BGSQ_AaA';     
 // (1.2.1, 1.2.2 … 1.2.9); al llegar a 9 se reinicia a 0 y sube MENOR
 // (1.2.9 → 1.3.0).
 // ════════════════════════════════════════════════════════════════
-const APP_VERSION = '1.3.3';
+const APP_VERSION = '1.3.4';
 
 // ════════════════════════════════════════════════════════════════
 // CONSTANTES DE LA APP
@@ -384,7 +384,9 @@ let S = {
   // Boletin TFJA
   boletinHits: [], boletinLoaded: false, boletinFilter: 'pendientes',
   // Modal de detalle de tarjeta del dashboard
-  dashModal: null
+  dashModal: null,
+  // Modal de exportación (filtro por materia + columnas)
+  exportModal: false, expMaterias: null, expCols: null
 };
 
 const isAdmin  = () => S.role === 'admin';
@@ -1545,7 +1547,7 @@ function rReportes(){
   }else if(S.rep==='abogado'){
     body=`<b style="color:#0f2044">Por Abogado Responsable</b><div style="font-size:11.5px;color:#94a3b8;margin:3px 0 14px">${Object.keys(byAb).length} abogado(s)</div>${S.exps.length===0?none:Object.entries(byAb).sort((a,b)=>b[1].length-a[1].length).map(([ab,l])=>`<div style="margin-bottom:18px"><div style="display:flex;align-items:center;gap:8px;margin-bottom:7px"><div style="width:26px;height:26px;border-radius:50%;background:#dbeafe;display:flex;align-items:center;justify-content:center;font-size:11.5px;font-weight:900;color:#1e40af">${(ab[0]||'?').toUpperCase()}</div><span style="font-size:12.5px;font-weight:900;color:#0f2044">${esc(ab)}</span><span style="font-size:10.5px;color:#94a3b8;font-weight:700">${l.length} juicio(s)</span></div>${mT(l,['numeroJuicio','demandante','tipoTramite','estatus'],['N° Juicio','Demandante','Tipo Trámite','Estatus'])}</div>`).join('')}`;
   }else{
-    body=`<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:14px"><div><b style="color:#0f2044">Listado General</b><div style="font-size:11.5px;color:#94a3b8;margin-top:3px">Total: ${S.exps.length} expediente(s)</div></div>${S.exps.length>0?`<button class="btn btn-success" onclick="exportToExcel()" style="display:flex;align-items:center;gap:6px">${icon('barChart')} Exportar a Excel</button>`:''}</div>${S.exps.length===0?none:`<div style="overflow-x:auto"><table class="tbl" style="font-size:10.5px"><thead><tr>${['N° Juicio','Exp. Interno','Demandante','Sala','U. Admva.','Tipo Trámite','Abogado','F. Emplazamiento','F. Sentencia','Suspensión','Estatus'].map(h=>`<th style="font-size:8px">${h}</th>`).join('')}</tr></thead><tbody>${S.exps.map((e,i)=>`<tr style="background:${i%2?'#fafbfc':'white'}"><td style="font-weight:800;color:#1e3a5f">${esc(e.numeroJuicio)}</td><td style="color:#64748b">${esc(e.numeroExpedienteInterno)||'—'}</td><td style="max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(e.demandante)||'—'}</td><td>${esc(e.sala)||'—'}</td><td>${esc(e.unidadAdministrativa)||'—'}</td><td>${esc(e.tipoTramite)||'—'}</td><td>${esc(e.abogadoResponsable)||'—'}</td><td>${fd(e.fechaEmplazamiento)}</td><td>${fd(e.fechaSentencia)}</td><td><span style="font-size:10.5px;font-weight:800;padding:2px 7px;border-radius:999px;background:${e.suspension==='Sí'?'#fef3c7':'#f1f5f9'};color:${e.suspension==='Sí'?'#92400e':'#64748b'}">${esc(e.suspension)||'—'}</span></td><td>${bdg(e.estatus,true)}</td></tr>`).join('')}</tbody></table></div>`}`;
+    body=`<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:14px"><div><b style="color:#0f2044">Listado General</b><div style="font-size:11.5px;color:#94a3b8;margin-top:3px">Total: ${S.exps.length} expediente(s)</div></div>${S.exps.length>0?`<button class="btn btn-success" onclick="openExportModal()" style="display:flex;align-items:center;gap:6px">${icon('barChart')} Exportar a Excel</button>`:''}</div>${S.exps.length===0?none:`<div style="overflow-x:auto"><table class="tbl" style="font-size:10.5px"><thead><tr>${['N° Juicio','Exp. Interno','Demandante','Sala','U. Admva.','Tipo Trámite','Abogado','F. Emplazamiento','F. Sentencia','Suspensión','Estatus'].map(h=>`<th style="font-size:8px">${h}</th>`).join('')}</tr></thead><tbody>${S.exps.map((e,i)=>`<tr style="background:${i%2?'#fafbfc':'white'}"><td style="font-weight:800;color:#1e3a5f">${esc(e.numeroJuicio)}</td><td style="color:#64748b">${esc(e.numeroExpedienteInterno)||'—'}</td><td style="max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(e.demandante)||'—'}</td><td>${esc(e.sala)||'—'}</td><td>${esc(e.unidadAdministrativa)||'—'}</td><td>${esc(e.tipoTramite)||'—'}</td><td>${esc(e.abogadoResponsable)||'—'}</td><td>${fd(e.fechaEmplazamiento)}</td><td>${fd(e.fechaSentencia)}</td><td><span style="font-size:10.5px;font-weight:800;padding:2px 7px;border-radius:999px;background:${e.suspension==='Sí'?'#fef3c7':'#f1f5f9'};color:${e.suspension==='Sí'?'#92400e':'#64748b'}">${esc(e.suspension)||'—'}</span></td><td>${bdg(e.estatus,true)}</td></tr>`).join('')}</tbody></table></div>`}`;
   }
   return `<div><div class="sbar"><div class="sbar-line"></div><span class="sbar-title">Reportes</span></div><div class="rtabs">${tabs.map(([id,l])=>`<button class="rtab${S.rep===id?' active':''}" onclick="S.rep='${id}';render()">${l}</button>`).join('')}</div><div class="card">${body}</div></div>`;
 }
@@ -1767,7 +1769,7 @@ function render(){
   const paint = () => {
     rHdr();
     const v={lista:rLista,form:rForm,detalle:rDetalle,buscar:rBuscar,reportes:rReportes,importar:rImportar,bitacora:rBitacora,calendario:rCalendario,boletin:rBoletin};
-    document.getElementById('main').innerHTML = `<div id="importMain">${renderNotifBanner()}${(v[S.view]||rLista)()}</div>${rDashModal()}`;
+    document.getElementById('main').innerHTML = `<div id="importMain">${renderNotifBanner()}${(v[S.view]||rLista)()}</div>${rDashModal()}${rExportModal()}`;
   };
   const reduceMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
   if (document.startViewTransition && !reduceMotion) {
@@ -2040,12 +2042,82 @@ function downloadTemplate(){
   })();
 }
 
+// Catálogo de columnas exportables: [etiqueta, campo, grupo, ancho, esFecha]
+const EXPORT_COLS=[['Prioridad','prioridad',0,12],['N° de Juicio','numeroJuicio',0,15],['Tipo de Juicio','tipoJuicio',0,18],['N° Exp. Interno / CNA','numeroExpedienteInterno',0,18],['Demandante','demandante',0,28],['Sala','sala',0,16],['Unidad Administrativa','unidadAdministrativa',0,24],['Acto Impugnado','actoImpugnado',0,32],['Título de Concesión','tituloConcesion',0,20],['N° Exp. Admvo. (D.A.A.)','numeroExpedienteAdministrativo',0,20],['Tipo de Trámite','tipoTramite',0,24],['Tema de Fondo','temaFondo',0,36],['Resolución Impugnada','resolucionImpugnada',0,32],['F. Emisión Resolución','fechaEmisionResolucion',0,16,1],['Cuantía','cuantia',0,18],['Autoridad Demandada','autoridadDemandada',1,24],['Autoridad Vinculada','autoridadVinculada',1,24],['Abogado Responsable','abogadoResponsable',1,22],['F. Emplazamiento','fechaEmplazamiento',2,15,1],['F. Contestación','fechaContestacion',2,15,1],['F. Próx. Audiencia','fechaProximaAudiencia',2,15,1],['F. Sentencia','fechaSentencia',2,15,1],['Efecto de la Sentencia','efectoSentencia',2,28],['F. Notif. Sentencia','fechaNotificacionSentencia',2,15,1],['F. Firmeza','fechaFirmeza',2,15,1],['F. Vencimiento Cumplimiento','fechaVencimientoCumplimiento',2,18,1],['Suspensión','suspension',3,13],['F. Notif. Suspensión','fechaNotificacionSuspension',3,15,1],['Efectos de la Suspensión','efectosSuspension',3,28],['Estatus','estatus',4,20],['F. Estatus','fechaEstatus',4,15,1],['N° Requerimientos','numeroRequerimientos',4,15],['N° Apercibimientos','numeroApercibimientos',4,15],['F. Último Apercibimiento','fechaUltimoApercibimiento',4,17,1],['N° Memo Informe','numeroMemo',4,20],['F. Memo Informe','fechaMemo',4,15,1],['Oficio Contestación','oficioContestacion',5,22],['F. Oficio Contestación','fechaOficioContestacion',5,18,1],['Oficio Amp. Demanda','oficioAmpliacion',5,22],['F. Oficio Amp. Demanda','fechaOficioAmpliacion',5,18,1],['Oficio Alegatos','oficioAlegatos',5,22],['F. Oficio Alegatos','fechaOficioAlegatos',5,18,1],['Resumen Procesal','resumenActuaciones',6,50],['Notas y Observaciones','notas',6,40]];
+const EXPORT_GROUPS=[{name:'IDENTIFICACIÓN',color:'FF1E40AF',light:'FFDBEAFE'},{name:'AUTORIDADES',color:'FF065F46',light:'FFD1FAE5'},{name:'FECHAS',color:'FF92400E',light:'FFFEF3C7'},{name:'SUSPENSIÓN',color:'FFC2410C',light:'FFFED7AA'},{name:'SEGUIMIENTO',color:'FF5B21B6',light:'FFEDE9FE'},{name:'OFICIOS DE RESPUESTA',color:'FF065F46',light:'FFCCFBF1'},{name:'OBSERVACIONES',color:'FF475569',light:'FFF1F5F9'}];
+
+function openExportModal(){
+  if(S.exps.length===0) return showToast('No hay expedientes para exportar',true);
+  S.expMaterias = new Set(TIPO_JUICIO);
+  S.expCols = new Set(EXPORT_COLS.map(c=>c[1]));
+  S.exportModal = true;
+  render();
+}
+function closeExportModal(){ S.exportModal=false; render(); }
+function toggleExpMateria(v){ S.expMaterias.has(v) ? S.expMaterias.delete(v) : S.expMaterias.add(v); render(); }
+function toggleExpCol(k){ S.expCols.has(k) ? S.expCols.delete(k) : S.expCols.add(k); render(); }
+function setExpColsGroup(g,on){ EXPORT_COLS.filter(c=>c[2]===g).forEach(c=> on ? S.expCols.add(c[1]) : S.expCols.delete(c[1])); render(); }
+function setExpColsAll(on){ S.expCols = on ? new Set(EXPORT_COLS.map(c=>c[1])) : new Set(); render(); }
+
+function rExportModal(){
+  if(!S.exportModal) return '';
+  const allMaterias = S.expMaterias.size === TIPO_JUICIO.length;
+  const colsChecked = S.expCols.size;
+  return `<div class="dmodal-bg" onclick="if(event.target===this)closeExportModal()">
+    <div class="dmodal" style="max-width:640px">
+      <div class="dmodal-hd">
+        <div><div style="font-weight:900;font-size:16px;color:#0f2044;display:flex;align-items:center;gap:7px">${icon('barChart')} Exportar a Excel</div><div style="font-size:11.5px;color:#64748b;margin-top:2px">Elige la materia y las columnas a incluir</div></div>
+        <button class="dmodal-close" onclick="closeExportModal()">${icon('x')}</button>
+      </div>
+      <div class="st" style="margin:6px 0 10px"><span>Materia</span><hr></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:6px">
+        ${TIPO_JUICIO.map(t=>`<label style="display:flex;align-items:center;gap:6px;padding:6px 12px;border-radius:999px;border:1px solid ${S.expMaterias.has(t)?'#93c5fd':'#e2e8f0'};background:${S.expMaterias.has(t)?'#eff6ff':'white'};font-size:11.5px;font-weight:700;color:${S.expMaterias.has(t)?'#1e40af':'#64748b'};cursor:pointer">
+          <input type="checkbox" ${S.expMaterias.has(t)?'checked':''} onchange="toggleExpMateria('${t}')" style="width:14px;height:14px">${esc(t)}
+        </label>`).join('')}
+      </div>
+      <p style="font-size:10.5px;color:#94a3b8;margin-bottom:6px">${allMaterias?'Se incluyen todas las materias (todos los expedientes).':'Sólo se exportarán expedientes de la(s) materia(s) marcada(s).'}</p>
+
+      <div class="st" style="margin:14px 0 10px"><span>Columnas</span><hr>
+        <button class="link-btn" style="color:#2563eb;font-size:11px" onclick="setExpColsAll(true)">Todas</button>
+        <button class="link-btn" style="color:#dc2626;font-size:11px" onclick="setExpColsAll(false)">Ninguna</button>
+      </div>
+      <div style="max-height:320px;overflow-y:auto;border:1px solid #f1f5f9;border-radius:10px;padding:10px 12px">
+        ${EXPORT_GROUPS.map((g,gi)=>{
+          const gc = EXPORT_COLS.filter(c=>c[2]===gi);
+          if(!gc.length) return '';
+          const allOn = gc.every(c=>S.expCols.has(c[1]));
+          return `<div style="margin-bottom:10px">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:5px">
+              <label style="display:flex;align-items:center;gap:6px;font-size:10.5px;font-weight:900;color:#64748b;text-transform:uppercase;letter-spacing:.05em;cursor:pointer">
+                <input type="checkbox" ${allOn?'checked':''} onchange="setExpColsGroup(${gi},this.checked)" style="width:13px;height:13px">${esc(g.name)}
+              </label>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px 10px;padding-left:20px">
+              ${gc.map(c=>`<label style="display:flex;align-items:center;gap:6px;font-size:11.5px;color:#374151;cursor:pointer">
+                <input type="checkbox" ${S.expCols.has(c[1])?'checked':''} onchange="toggleExpCol('${c[1]}')" style="width:13px;height:13px">${esc(c[0])}
+              </label>`).join('')}
+            </div>
+          </div>`;
+        }).join('')}
+      </div>
+      <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:16px">
+        <button class="btn btn-secondary" onclick="closeExportModal()">Cancelar</button>
+        <button class="btn btn-success" ${colsChecked===0?'disabled':''} onclick="exportToExcel()">${icon('download')} Exportar${colsChecked?` (${colsChecked} col.)`:''}</button>
+      </div>
+    </div>
+  </div>`;
+}
+
 async function exportToExcel(){
   if(S.exps.length===0) return showToast('No hay expedientes para exportar',true);
+  const allMaterias = !S.expMaterias || S.expMaterias.size === TIPO_JUICIO.length;
+  const exps = allMaterias ? S.exps : S.exps.filter(e=>S.expMaterias.has(e.tipoJuicio));
+  if(exps.length===0) return showToast('No hay expedientes que coincidan con la materia seleccionada',true);
+  const cols = S.expCols ? EXPORT_COLS.filter(c=>S.expCols.has(c[1])) : EXPORT_COLS;
+  if(cols.length===0) return showToast('Selecciona al menos una columna',true);
   const today=new Date().toISOString().slice(0,10);
   const fname=`expedientes-juicios-${today}`;
-  const cols=[['Prioridad','prioridad',0,12],['N° de Juicio','numeroJuicio',0,15],['Tipo de Juicio','tipoJuicio',0,18],['N° Exp. Interno / CNA','numeroExpedienteInterno',0,18],['Demandante','demandante',0,28],['Sala','sala',0,16],['Unidad Administrativa','unidadAdministrativa',0,24],['Acto Impugnado','actoImpugnado',0,32],['Título de Concesión','tituloConcesion',0,20],['N° Exp. Admvo. (D.A.A.)','numeroExpedienteAdministrativo',0,20],['Tipo de Trámite','tipoTramite',0,24],['Tema de Fondo','temaFondo',0,36],['Resolución Impugnada','resolucionImpugnada',0,32],['F. Emisión Resolución','fechaEmisionResolucion',0,16,1],['Cuantía','cuantia',0,18],['Autoridad Demandada','autoridadDemandada',1,24],['Autoridad Vinculada','autoridadVinculada',1,24],['Abogado Responsable','abogadoResponsable',1,22],['F. Emplazamiento','fechaEmplazamiento',2,15,1],['F. Contestación','fechaContestacion',2,15,1],['F. Próx. Audiencia','fechaProximaAudiencia',2,15,1],['F. Sentencia','fechaSentencia',2,15,1],['Efecto de la Sentencia','efectoSentencia',2,28],['F. Notif. Sentencia','fechaNotificacionSentencia',2,15,1],['F. Firmeza','fechaFirmeza',2,15,1],['F. Vencimiento Cumplimiento','fechaVencimientoCumplimiento',2,18,1],['Suspensión','suspension',3,13],['F. Notif. Suspensión','fechaNotificacionSuspension',3,15,1],['Efectos de la Suspensión','efectosSuspension',3,28],['Estatus','estatus',4,20],['F. Estatus','fechaEstatus',4,15,1],['N° Requerimientos','numeroRequerimientos',4,15],['N° Apercibimientos','numeroApercibimientos',4,15],['F. Último Apercibimiento','fechaUltimoApercibimiento',4,17,1],['N° Memo Informe','numeroMemo',4,20],['F. Memo Informe','fechaMemo',4,15,1],['Oficio Contestación','oficioContestacion',5,22],['F. Oficio Contestación','fechaOficioContestacion',5,18,1],['Oficio Amp. Demanda','oficioAmpliacion',5,22],['F. Oficio Amp. Demanda','fechaOficioAmpliacion',5,18,1],['Oficio Alegatos','oficioAlegatos',5,22],['F. Oficio Alegatos','fechaOficioAlegatos',5,18,1],['Resumen Procesal','resumenActuaciones',6,50],['Notas y Observaciones','notas',6,40]];
-  const groups=[{name:'IDENTIFICACIÓN',color:'FF1E40AF',light:'FFDBEAFE'},{name:'AUTORIDADES',color:'FF065F46',light:'FFD1FAE5'},{name:'FECHAS',color:'FF92400E',light:'FFFEF3C7'},{name:'SUSPENSIÓN',color:'FFC2410C',light:'FFFED7AA'},{name:'SEGUIMIENTO',color:'FF5B21B6',light:'FFEDE9FE'},{name:'OFICIOS DE RESPUESTA',color:'FF065F46',light:'FFCCFBF1'},{name:'OBSERVACIONES',color:'FF475569',light:'FFF1F5F9'}];
+  const groups=EXPORT_GROUPS;
   const sCol={'En trámite':{bg:'FFDBEAFE',fg:'FF1E40AF'},'Sentencia favorable':{bg:'FFD1FAE5',fg:'FF065F46'},'Sentencia desfavorable':{bg:'FFFEE2E2',fg:'FF991B1B'},'Sobreseído':{bg:'FFF1F5F9',fg:'FF475569'},'Desistido':{bg:'FFF8FAFC',fg:'FF64748B'},'En cumplimiento':{bg:'FFFEF3C7',fg:'FF92400E'},'Cumplimentado':{bg:'FFCCFBF1',fg:'FF065F46'},'En revisión':{bg:'FFEDE9FE',fg:'FF5B21B6'}};
   if(typeof ExcelJS!=='undefined'){
     try{
@@ -2056,18 +2128,20 @@ async function exportToExcel(){
       let cIdx=1;for(let g=0;g<groups.length;g++){const gc=cols.filter(c=>c[2]===g);if(gc.length===0)continue;const sc=cIdx,ec=cIdx+gc.length-1;if(sc!==ec)ws.mergeCells(2,sc,2,ec);const cell=ws.getCell(2,sc);cell.value=groups[g].name;cell.fill={type:'pattern',pattern:'solid',fgColor:{argb:groups[g].light}};cell.font={bold:true,color:{argb:groups[g].color},size:10};cell.alignment={vertical:'middle',horizontal:'center'};cell.border=cb;if(sc!==ec){for(let i=sc+1;i<=ec;i++){const c=ws.getCell(2,i);c.border=cb;c.fill={type:'pattern',pattern:'solid',fgColor:{argb:groups[g].light}};}}cIdx=ec+1;}
       ws.getRow(2).height=22;
       cols.forEach(([h,k,g,w,isDate],i)=>{const cell=ws.getCell(3,i+1);cell.value=h;cell.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FF0F2044'}};cell.font={bold:true,color:{argb:'FFFFFFFF'},size:10};cell.alignment={vertical:'middle',horizontal:'center',wrapText:true};cell.border={top:{style:'thin',color:{argb:'FFFFFFFF'}},left:{style:'thin',color:{argb:'FFFFFFFF'}},bottom:{style:'medium',color:{argb:'FFD4A017'}},right:{style:'thin',color:{argb:'FFFFFFFF'}}};ws.getColumn(i+1).width=w;});ws.getRow(3).height=36;
-      S.exps.forEach((e,idx)=>{const rn=4+idx;const zb=idx%2===0?'FFFFFFFF':'FFF8FAFC';cols.forEach(([h,k,g,w,isDate],i)=>{const cell=ws.getCell(rn,i+1);const val=e[k];const isNum=k==='numeroRequerimientos'||k==='numeroApercibimientos';if(isDate&&val){cell.value=new Date(val+'T00:00:00');cell.numFmt='dd/mm/yyyy';}else if(isNum&&val!==''&&val!=null){cell.value=Number(val)||0;}else{cell.value=val||'';}cell.fill={type:'pattern',pattern:'solid',fgColor:{argb:zb}};cell.font={size:10,color:{argb:'FF1E293B'}};cell.alignment={vertical:'middle',horizontal:(isDate||isNum)?'center':'left',wrapText:true};cell.border=cb;if(k==='numeroJuicio'){cell.font={size:10,bold:true,color:{argb:'FF1E3A5F'}};cell.alignment={vertical:'middle',horizontal:'left',wrapText:true};}if(k==='prioridad'){const prMap={urgente:{bg:'FFFEE2E2',fg:'FF991B1B',l:'🔴 Urgente'},alta:{bg:'FFFFEDD5',fg:'FF9A3412',l:'🟠 Alta'},normal:{bg:'FFDBEAFE',fg:'FF1E40AF',l:'🔵 Normal'},baja:{bg:'FFF1F5F9',fg:'FF475569',l:'⚪ Baja'}};const pInfo=prMap[val||'normal'];cell.value=pInfo.l;cell.fill={type:'pattern',pattern:'solid',fgColor:{argb:pInfo.bg}};cell.font={size:10,bold:true,color:{argb:pInfo.fg}};cell.alignment={vertical:'middle',horizontal:'center',wrapText:true};}if(k==='tipoJuicio'&&val){const tjMap={'Juicio de Nulidad':{bg:'FFFEF3C7',fg:'FF92400E'},'Juicio Agrario':{bg:'FFD1FAE5',fg:'FF065F46'},'Juicio Laboral':{bg:'FFEDE9FE',fg:'FF5B21B6'}};const tjInfo=tjMap[val];if(tjInfo){cell.fill={type:'pattern',pattern:'solid',fgColor:{argb:tjInfo.bg}};cell.font={size:10,bold:true,color:{argb:tjInfo.fg}};cell.alignment={vertical:'middle',horizontal:'center',wrapText:true};}}if(k==='estatus'&&sCol[val]){cell.fill={type:'pattern',pattern:'solid',fgColor:{argb:sCol[val].bg}};cell.font={size:10,bold:true,color:{argb:sCol[val].fg}};cell.alignment={vertical:'middle',horizontal:'center',wrapText:true};}if(k==='suspension'&&val==='Sí'){cell.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FFFEF3C7'}};cell.font={size:10,bold:true,color:{argb:'FF92400E'}};}});ws.getRow(rn).height=26;});
-      ws.autoFilter={from:{row:3,column:1},to:{row:3+S.exps.length,column:cols.length}};
+      exps.forEach((e,idx)=>{const rn=4+idx;const zb=idx%2===0?'FFFFFFFF':'FFF8FAFC';cols.forEach(([h,k,g,w,isDate],i)=>{const cell=ws.getCell(rn,i+1);const val=e[k];const isNum=k==='numeroRequerimientos'||k==='numeroApercibimientos';if(isDate&&val){cell.value=new Date(val+'T00:00:00');cell.numFmt='dd/mm/yyyy';}else if(isNum&&val!==''&&val!=null){cell.value=Number(val)||0;}else{cell.value=val||'';}cell.fill={type:'pattern',pattern:'solid',fgColor:{argb:zb}};cell.font={size:10,color:{argb:'FF1E293B'}};cell.alignment={vertical:'middle',horizontal:(isDate||isNum)?'center':'left',wrapText:true};cell.border=cb;if(k==='numeroJuicio'){cell.font={size:10,bold:true,color:{argb:'FF1E3A5F'}};cell.alignment={vertical:'middle',horizontal:'left',wrapText:true};}if(k==='prioridad'){const prMap={urgente:{bg:'FFFEE2E2',fg:'FF991B1B',l:'🔴 Urgente'},alta:{bg:'FFFFEDD5',fg:'FF9A3412',l:'🟠 Alta'},normal:{bg:'FFDBEAFE',fg:'FF1E40AF',l:'🔵 Normal'},baja:{bg:'FFF1F5F9',fg:'FF475569',l:'⚪ Baja'}};const pInfo=prMap[val||'normal'];cell.value=pInfo.l;cell.fill={type:'pattern',pattern:'solid',fgColor:{argb:pInfo.bg}};cell.font={size:10,bold:true,color:{argb:pInfo.fg}};cell.alignment={vertical:'middle',horizontal:'center',wrapText:true};}if(k==='tipoJuicio'&&val){const tjMap={'Juicio de Nulidad':{bg:'FFFEF3C7',fg:'FF92400E'},'Juicio Agrario':{bg:'FFD1FAE5',fg:'FF065F46'},'Juicio Laboral':{bg:'FFEDE9FE',fg:'FF5B21B6'}};const tjInfo=tjMap[val];if(tjInfo){cell.fill={type:'pattern',pattern:'solid',fgColor:{argb:tjInfo.bg}};cell.font={size:10,bold:true,color:{argb:tjInfo.fg}};cell.alignment={vertical:'middle',horizontal:'center',wrapText:true};}}if(k==='estatus'&&sCol[val]){cell.fill={type:'pattern',pattern:'solid',fgColor:{argb:sCol[val].bg}};cell.font={size:10,bold:true,color:{argb:sCol[val].fg}};cell.alignment={vertical:'middle',horizontal:'center',wrapText:true};}if(k==='suspension'&&val==='Sí'){cell.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FFFEF3C7'}};cell.font={size:10,bold:true,color:{argb:'FF92400E'}};}});ws.getRow(rn).height=26;});
+      ws.autoFilter={from:{row:3,column:1},to:{row:3+exps.length,column:cols.length}};
       const buf=await wb.xlsx.writeBuffer();const blob=new Blob([buf],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=fname+'.xlsx';document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(url);
       showToast('Excel exportado: '+fname+'.xlsx');
+      S.exportModal=false; render();
       return;
     }catch(err){console.error('Error al exportar:',err);}
   }
   const escCSV=v=>{const s=String(v??'');return/[;"\n,]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s;};
-  let csv='\uFEFF'+cols.map(c=>c[0]).join(';')+'\n';
-  S.exps.forEach(e=>{csv+=cols.map(([,k])=>escCSV(e[k])).join(';')+'\n';});
+  let csv='﻿'+cols.map(c=>c[0]).join(';')+'\n';
+  exps.forEach(e=>{csv+=cols.map(([,k])=>escCSV(e[k])).join(';')+'\n';});
   const blob=new Blob([csv],{type:'text/csv;charset=utf-8'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=fname+'.csv';document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(url);
   showToast('CSV exportado: '+fname+'.csv');
+  S.exportModal=false; render();
 }
 
 // ════════════════════════════════════════════════════════════════
