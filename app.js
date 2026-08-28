@@ -11,7 +11,7 @@ const SUPABASE_ANON_KEY = 'sb_publishable_Ne9opVMzKFWXvl3w5p3hCg_BGSQ_AaA';     
 // (1.2.1, 1.2.2 … 1.2.9); al llegar a 9 se reinicia a 0 y sube MENOR
 // (1.2.9 → 1.3.0).
 // ════════════════════════════════════════════════════════════════
-const APP_VERSION = '1.3.2';
+const APP_VERSION = '1.3.3';
 
 // ════════════════════════════════════════════════════════════════
 // CONSTANTES DE LA APP
@@ -24,12 +24,59 @@ const TIPO_JUICIO=['Juicio de Nulidad','Juicio Agrario','Juicio Laboral'];
 const VIA_NULIDAD=['Ordinario','Sumario','En Línea'];
 const TJ_COLORS={'Juicio de Nulidad':{bg:'#fef3c7',c:'#92400e'},'Juicio Agrario':{bg:'#d1fae5',c:'#065f46'},'Juicio Laboral':{bg:'#ede9fe',c:'#5b21b6'}};
 const PRIORIDAD=[
-  {v:'urgente',l:'🔴 Urgente',c:'#dc2626',bg:'#fee2e2'},
-  {v:'alta',   l:'🟠 Alta',   c:'#ea580c',bg:'#ffedd5'},
-  {v:'normal', l:'🔵 Normal', c:'#2563eb',bg:'#dbeafe'},
-  {v:'baja',   l:'⚪ Baja',   c:'#64748b',bg:'#f1f5f9'}
+  {v:'urgente',l:'Urgente',c:'#dc2626',bg:'#fee2e2'},
+  {v:'alta',   l:'Alta',   c:'#ea580c',bg:'#ffedd5'},
+  {v:'normal', l:'Normal', c:'#2563eb',bg:'#dbeafe'},
+  {v:'baja',   l:'Baja',   c:'#64748b',bg:'#f1f5f9'}
 ];
 const PR_MAP=Object.fromEntries(PRIORIDAD.map(p=>[p.v,p]));
+
+// ════════════════════════════════════════════════════════════════
+// ICONOS SVG — reemplazan emoji para una apariencia consistente
+// entre sistemas operativos y navegadores (estilo trazo, 24×24)
+// ════════════════════════════════════════════════════════════════
+const ICONS={
+  check:'<path d="M20 6 9 17l-5-5"/>',
+  x:'<path d="M18 6 6 18"/><path d="M6 6l12 12"/>',
+  alertTriangle:'<path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"/><path d="M12 9v4"/><path d="M12 17h.01"/>',
+  checkCircle:'<path d="M21.8 10A10 10 0 1 1 17 3.34"/><path d="m9 11 3 3L22 4"/>',
+  xCircle:'<circle cx="12" cy="12" r="10"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/>',
+  clock:'<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>',
+  calendar:'<rect width="18" height="18" x="3" y="4" rx="2"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h18"/>',
+  fileText:'<path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><path d="M14 2v6h6"/><path d="M9 13h6"/><path d="M9 17h6"/>',
+  barChart:'<path d="M3 3v18h18"/><path d="M7 16v-4"/><path d="M12 16V8"/><path d="M17 16v-7"/>',
+  list:'<path d="M8 6h13"/><path d="M8 12h13"/><path d="M8 18h13"/><path d="M3 6h.01"/><path d="M3 12h.01"/><path d="M3 18h.01"/>',
+  search:'<circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>',
+  folder:'<path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z"/>',
+  paperclip:'<path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 9.03l-8.58 8.58a2 2 0 0 1-2.83-2.83l8.05-8.04"/>',
+  image:'<rect width="18" height="18" x="3" y="3" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-4.5-4.5a2 2 0 0 0-2.82 0L5 19"/>',
+  edit:'<path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>',
+  eye:'<path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"/><circle cx="12" cy="12" r="3"/>',
+  refreshCw:'<path d="M3 12a9 9 0 0 1 15.3-6.5L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-15.3 6.5L3 16"/><path d="M8 16H3v5"/>',
+  ban:'<circle cx="12" cy="12" r="10"/><path d="m4.9 4.9 14.2 14.2"/>',
+  user:'<path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>',
+  download:'<path d="M12 15V3"/><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/>',
+  upload:'<path d="M12 15V3"/><path d="m7 8 5-5 5 5"/><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>',
+  bell:'<path d="M10.27 21a1.7 1.7 0 0 0 3.46 0"/><path d="M3.4 15.34A1 1 0 0 0 4.2 17h15.6a1 1 0 0 0 .8-1.66C19.5 13.9 18 12.5 18 8a6 6 0 0 0-12 0c0 4.5-1.5 5.9-2.6 7.34"/>',
+  lightbulb:'<path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1.4.5 2.6 1.5 3.5.8.8 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/>',
+  mail:'<rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>',
+  inbox:'<path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11Z"/>',
+  key:'<path d="m15.5 7.5 2.3 2.3a1 1 0 0 0 1.4 0l2.1-2.1a1 1 0 0 0 0-1.4L19 4"/><path d="m21 2-9.6 9.6"/><circle cx="7.5" cy="15.5" r="5.5"/>',
+  logOut:'<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/>',
+  chevronDown:'<path d="m6 9 6 6 6-6"/>',
+  trash:'<path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>',
+  plus:'<path d="M5 12h14"/><path d="M12 5v14"/>',
+  cornerDownLeft:'<path d="M20 4v7a4 4 0 0 1-4 4H4"/><path d="m9 10-5 5 5 5"/>',
+  lock:'<rect width="18" height="11" x="3" y="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>',
+  pin:'<path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/>',
+  mic:'<path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><path d="M12 19v3"/>',
+  scale:'<path d="M12 3v18"/><path d="M3 7h18"/><path d="M5 7 2 15a4 4 0 0 0 6 0L5 7Z"/><path d="M19 7l-3 8a4 4 0 0 0 6 0l-3-8Z"/><path d="M9 21h6"/>',
+  circle:'<circle cx="12" cy="12" r="10"/>',
+  clipboardList:'<rect width="8" height="4" x="8" y="2" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M12 11h4"/><path d="M12 16h4"/><path d="M8 11h.01"/><path d="M8 16h.01"/>',
+  loader:'<line x1="12" x2="12" y1="2" y2="6"/><line x1="12" x2="12" y1="18" y2="22"/><line x1="4.93" x2="7.76" y1="4.93" y2="7.76"/><line x1="16.24" x2="19.07" y1="16.24" y2="19.07"/><line x1="2" x2="6" y1="12" y2="12"/><line x1="18" x2="22" y1="12" y2="12"/><line x1="4.93" x2="7.76" y1="19.07" y2="16.24"/><line x1="16.24" x2="19.07" y1="7.76" y2="4.93"/>',
+};
+function icon(name, cls){ return `<svg class="icon${cls?' '+cls:''}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[name]||''}</svg>`; }
+function dotIc(color, cls){ return `<span class="dot-ic${cls?' '+cls:''}" style="background:${color}"></span>`; }
 const EF={numeroJuicio:'',numeroExpedienteInterno:'',demandante:'',sala:'',unidadAdministrativa:'',actoImpugnado:'',tituloConcesion:'',numeroExpedienteAdministrativo:'',tipoJuicio:'',viaProcesal:'',tipoTramite:'',temaFondo:'',resolucionImpugnada:'',fechaEmisionResolucion:'',cuantia:'',autoridadDemandada:'',autoridadVinculada:'',fechaEmplazamiento:'',fechaContestacion:'',suspension:'No',fechaNotificacionSuspension:'',efectosSuspension:'',fechaSentencia:'',efectoSentencia:'',fechaNotificacionSentencia:'',fechaFirmeza:'',fechaVencimientoCumplimiento:'',estatus:'En trámite',fechaEstatus:'',numeroRequerimientos:'',numeroApercibimientos:'',fechaUltimoApercibimiento:'',abogadoResponsable:'',fechaProximaAudiencia:'',numeroMemo:'',fechaMemo:'',resumenActuaciones:'',notas:'',prioridad:'normal',
   oficioContestacion:'',fechaOficioContestacion:'',
   oficioAmpliacion:'',fechaOficioAmpliacion:'',
@@ -277,20 +324,20 @@ function plazoInfoHTML(fechaEmplazamiento, tipoJuicio, viaProcesal) {
   // Sin fecha de emplazamiento: si ya hay tipo, indicarle al usuario
   if (!fechaEmplazamiento) {
     if (tipoJuicio === 'Juicio de Nulidad' || tipoJuicio === 'Juicio Agrario') {
-      return `<div class="plazo-info warn">⚠ Captura la <b>Fecha de Emplazamiento</b> para que se calcule automáticamente el plazo de contestación.</div>`;
+      return `<div class="plazo-info warn">${icon('alertTriangle')} Captura la <b>Fecha de Emplazamiento</b> para que se calcule automáticamente el plazo de contestación.</div>`;
     }
     return '';
   }
   // Hay emplazamiento pero no se seleccionó tipo de juicio (o no es soportado)
   if (!tipoJuicio) {
-    return `<div class="plazo-info warn">⚠ Selecciona el <b>Tipo de Juicio</b> (Juicio de Nulidad o Juicio Agrario) para calcular automáticamente el plazo de contestación.</div>`;
+    return `<div class="plazo-info warn">${icon('alertTriangle')} Selecciona el <b>Tipo de Juicio</b> (Juicio de Nulidad o Juicio Agrario) para calcular automáticamente el plazo de contestación.</div>`;
   }
   if (tipoJuicio !== 'Juicio de Nulidad' && tipoJuicio !== 'Juicio Agrario') {
-    return `<div class="plazo-info warn">⚠ El cálculo automático sólo está implementado para <b>Juicio de Nulidad</b> y <b>Juicio Agrario</b>.<span class="law">Para «${esc(tipoJuicio)}» captura la fecha límite manualmente conforme a la normativa aplicable.</span></div>`;
+    return `<div class="plazo-info warn">${icon('alertTriangle')} El cálculo automático sólo está implementado para <b>Juicio de Nulidad</b> y <b>Juicio Agrario</b>.<span class="law">Para «${esc(tipoJuicio)}» captura la fecha límite manualmente conforme a la normativa aplicable.</span></div>`;
   }
   // Para Juicio de Nulidad, exigir vía procesal
   if (tipoJuicio === 'Juicio de Nulidad' && !viaProcesal) {
-    return `<div class="plazo-info warn">⚠ Selecciona la <b>Vía Procesal</b> (Ordinario, Sumario o En Línea) para calcular el plazo de contestación.<span class="law">El plazo varía: 30 días hábiles en ordinario / en línea, 15 días hábiles en sumario.</span></div>`;
+    return `<div class="plazo-info warn">${icon('alertTriangle')} Selecciona la <b>Vía Procesal</b> (Ordinario, Sumario o En Línea) para calcular el plazo de contestación.<span class="law">El plazo varía: 30 días hábiles en ordinario / en línea, 15 días hábiles en sumario.</span></div>`;
   }
   const r = calcularPlazoContestacion(fechaEmplazamiento, tipoJuicio, viaProcesal);
   if (!r) return '';
@@ -504,9 +551,9 @@ async function doLogin() {
     }
   } catch(e) {
     const msg = e.message?.toLowerCase() || '';
-    errEl.textContent = (msg.includes('invalid') || msg.includes('credentials'))
-      ? '❌ Correo o contraseña incorrectos.'
-      : '❌ Error: ' + e.message;
+    errEl.innerHTML = icon('alertTriangle') + ' ' + esc((msg.includes('invalid') || msg.includes('credentials'))
+      ? 'Correo o contraseña incorrectos.'
+      : 'Error: ' + e.message);
     btn.disabled = false; btn.textContent = 'Iniciar sesión';
   }
 }
@@ -657,7 +704,8 @@ let _toastTimer = null;
 function showToast(m, err, warn) {
   if (_toastTimer) clearTimeout(_toastTimer);
   const t = document.getElementById('toast');
-  t.textContent = (err ? '✕ ' : '✓ ') + m;
+  const ic = err ? 'xCircle' : warn ? 'alertTriangle' : 'checkCircle';
+  t.innerHTML = icon(ic) + ' ' + esc(m);
   t.className = 'toast ' + (err ? 'toast-err' : warn ? 'toast-warn' : 'toast-ok');
   t.style.display = 'block';
   _toastTimer = setTimeout(() => t.style.display = 'none', 3500);
@@ -722,7 +770,7 @@ async function doSave() {
     S.exps.unshift(rec);
   }
 
-  showToast(wasEdit ? '✓ Expediente actualizado' : '✓ Expediente registrado');
+  showToast(wasEdit ? 'Expediente actualizado' : 'Expediente registrado');
   S.form = {...EF}; S.editId = null; S.view = 'lista';
   render();
 }
@@ -746,7 +794,7 @@ async function doDel(id) {
   S.selected.delete(id);
   S.delC = null;
   if (S.det?.id === id) { S.det = null; S.view = 'lista'; }
-  showToast('✓ Expediente eliminado');
+  showToast('Expediente eliminado');
   render();
 }
 
@@ -823,7 +871,7 @@ async function doDelSelected() {
     if (error) throw error;
     S.exps = S.exps.filter(e => !ids.includes(e.id));
     S.selected.clear();
-    showToast(`✓ ${n} expediente${n!==1?'s':''} eliminado${n!==1?'s':''}`);
+    showToast(`${n} expediente${n!==1?'s':''} eliminado${n!==1?'s':''}`);
   } catch(e) {
     showToast('Error al eliminar: ' + e.message, true);
   }
@@ -883,7 +931,7 @@ function rDashModal(){
     <div class="dmodal">
       <div class="dmodal-hd">
         <div><div style="font-weight:900;font-size:16px;color:#0f2044">${esc(title)}</div><div style="font-size:11.5px;color:#64748b;margin-top:2px">${list.length} expediente${list.length!==1?'s':''}</div></div>
-        <button class="dmodal-close" onclick="closeDashModal()">✕</button>
+        <button class="dmodal-close" onclick="closeDashModal()">${icon('x')}</button>
       </div>
       ${list.length===0 ? '<p style="text-align:center;color:#94a3b8;padding:36px;font-size:12.5px">No hay expedientes en esta categoría.</p>' : `
       <div style="overflow-x:auto"><table class="tbl">
@@ -910,22 +958,22 @@ function rHdr() {
   const wr = canWrite();
   const roleBg    = ad ? '#fef3c7' : wr ? '#dcfce7' : '#e0e7ff';
   const roleColor = ad ? '#92400e' : wr ? '#166534' : '#3730a3';
-  const roleLabel = ad ? '🔑 Administrador' : wr ? '✏️ Editor' : '👁 Solo lectura';
+  const roleLabel = `${icon(ad?'key':wr?'edit':'eye')} ${ad?'Administrador':wr?'Editor':'Solo lectura'}`;
 
   const ns = [
-    ['lista','▤ Expedientes'],
-    ...(wr ? [['form','+ Nuevo']] : []),
-    ['buscar','⌕ Buscar'],
-    ['calendario','📅 Calendario'],
-    ['reportes','◫ Reportes'],
+    ['lista',`${icon('list')} Expedientes`],
+    ...(wr ? [['form',`${icon('plus')} Nuevo`]] : []),
+    ['buscar',`${icon('search')} Buscar`],
+    ['calendario',`${icon('calendar')} Calendario`],
+    ['reportes',`${icon('barChart')} Reportes`],
     ['boletin', boletinNavLabel()],
-    ...(ad ? [['bitacora','📋 Bitácora']] : [])
+    ...(ad ? [['bitacora',`${icon('clipboardList')} Bitácora`]] : [])
   ];
 
   document.getElementById('hdr').innerHTML = `
     <div class="header">
       <div class="header-top">
-        <div class="logo">⚖</div>
+        <div class="logo">${icon('scale','icon-lg')}</div>
         <div>
           <div class="hdr-title">Sistema de Control de Juicios</div>
           <div class="hdr-sub">Organismo Desconcentrado · Administración Pública Federal</div>
@@ -939,18 +987,18 @@ function rHdr() {
             <div class="hdr-user-name">${esc(S.userName)}</div>
             <span class="hdr-role" style="background:${roleBg};color:${roleColor}">${roleLabel}</span>
           </div>
-          <button onclick="logout()" class="hdr-logout">⏏ Salir</button>
+          <button onclick="logout()" class="hdr-logout">${icon('logOut')} Salir</button>
         </div>
       </div>
       <div class="file-bar">
         <div class="dot dot-green"></div>
         <span style="color:#a5f3c7;font-weight:700">Supabase · PostgreSQL</span>
         <span style="opacity:.6">· Sincronizado en la nube · Acceso desde cualquier dispositivo · v${APP_VERSION}</span>
-        ${S.loading ? '<span style="margin-left:auto;color:#fbbf24;font-size:10.5px;animation:pulse 1s infinite">⏳ Cargando…</span>' : ''}
-        <button onclick="loadData()" style="margin-left:auto;background:none;border:1px solid rgba(255,255,255,0.2);border-radius:6px;padding:2px 10px;font-size:10.5px;font-weight:700;color:#93c5fd;cursor:pointer;font-family:inherit">↺ Recargar</button>
+        ${S.loading ? `<span style="margin-left:auto;color:#fbbf24;font-size:10.5px;display:inline-flex;align-items:center;gap:4px">${icon('loader','icon-spin')} Cargando…</span>` : ''}
+        <button onclick="loadData()" style="margin-left:auto;background:none;border:1px solid rgba(255,255,255,0.2);border-radius:6px;padding:2px 10px;font-size:10.5px;font-weight:700;color:#93c5fd;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:4px">${icon('refreshCw')} Recargar</button>
       </div>
-      ${!ad && !wr ? `<div class="readonly-bar">👁 Modo de solo lectura — puedes consultar y exportar, pero no modificar expedientes</div>` : ''}
-      ${!ad && wr  ? `<div class="readonly-bar" style="border-left-color:#4ade80;color:#bbf7d0">✏️ Modo Editor — puedes registrar y editar expedientes, pero no eliminarlos</div>` : ''}
+      ${!ad && !wr ? `<div class="readonly-bar">${icon('eye')} Modo de solo lectura — puedes consultar y exportar, pero no modificar expedientes</div>` : ''}
+      ${!ad && wr  ? `<div class="readonly-bar" style="border-left-color:#4ade80;color:#bbf7d0">${icon('edit')} Modo Editor — puedes registrar y editar expedientes, pero no eliminarlos</div>` : ''}
       <div class="nav">${ns.map(([id,l]) => `<button class="${S.view===id||(id==='form'&&S.view==='form')?'active':''}" onclick="${id==='form'?'goNew()':'sv(\''+id+'\')'}">${l}</button>`).join('')}</div>
     </div>`;
 }
@@ -1065,10 +1113,10 @@ function rLista() {
     ${atenCount > 0 ? `
     <div class="aten-banner">
       <div class="aten-header" onclick="S.atenOpen=!S.atenOpen;render()">
-        <div class="aten-icon">✅</div>
+        <div class="aten-icon">${icon('checkCircle')}</div>
         <div class="aten-title">Expedientes ya atendidos con oficio</div>
         <span class="aten-count">${atenCount} expediente${atenCount!==1?'s':''}</span>
-        <span class="aten-chevron${S.atenOpen?' open':''}">▼</span>
+        <span class="aten-chevron${S.atenOpen?' open':''}">${icon('chevronDown')}</span>
       </div>
       ${S.atenOpen ? `
       <div class="aten-body">
@@ -1080,7 +1128,7 @@ function rLista() {
         </div>
         ${atendidos.map(e=>{
           const ofCell = (oficio, fecha, lbl) => oficio
-            ? `<div class="aten-oficio"><span class="aten-oficio-tag">${lbl}</span><span class="aten-oficio-val">📄 ${esc(oficio)}</span>${fecha?`<span class="aten-oficio-date">${fd(fecha)}</span>`:''}</div>`
+            ? `<div class="aten-oficio"><span class="aten-oficio-tag">${lbl}</span><span class="aten-oficio-val">${icon('fileText')} ${esc(oficio)}</span>${fecha?`<span class="aten-oficio-date">${fd(fecha)}</span>`:''}</div>`
             : `<div class="aten-oficio"><span class="aten-oficio-tag">${lbl}</span><span class="aten-oficio-empty">—</span></div>`;
           return `<div class="aten-row">
             <div>
@@ -1103,45 +1151,45 @@ function rLista() {
       </div>
       <div style="margin-left:auto;display:flex;gap:8px;flex-wrap:wrap">
         <select onchange="S.statusFilter=this.value;render()" style="width:auto;cursor:pointer" title="Filtrar por estatus">
-          <option value="">⚙ Todos los estatus</option>
+          <option value="">Todos los estatus</option>
           ${ESTATUS.map(s=>{
             const n=S.exps.filter(e=>(e.estatus||'En trámite')===s).length;
             return `<option value="${esc(s)}"${S.statusFilter===s?' selected':''}>${esc(s)} (${n})</option>`;
           }).join('')}
         </select>
         <select onchange="S.sortBy=this.value;render()" style="width:auto;cursor:pointer">
-          <option value="reg-desc"${S.sortBy==='reg-desc'?' selected':''}>📅 Registro: más reciente</option>
-          <option value="reg-asc"${S.sortBy==='reg-asc'?' selected':''}>📅 Registro: más antiguo</option>
-          <option value="juicio-desc"${S.sortBy==='juicio-desc'?' selected':''}>⚖ N° Juicio: descendente</option>
-          <option value="juicio-asc"${S.sortBy==='juicio-asc'?' selected':''}>⚖ N° Juicio: ascendente</option>
-          <option value="prio"${S.sortBy==='prio'?' selected':''}>🔴 Prioridad: urgentes primero</option>
-          <option value="estatus-asc"${S.sortBy==='estatus-asc'?' selected':''}>📑 Estatus: A → Z</option>
-          <option value="estatus-desc"${S.sortBy==='estatus-desc'?' selected':''}>📑 Estatus: Z → A</option>
+          <option value="reg-desc"${S.sortBy==='reg-desc'?' selected':''}>Registro: más reciente</option>
+          <option value="reg-asc"${S.sortBy==='reg-asc'?' selected':''}>Registro: más antiguo</option>
+          <option value="juicio-desc"${S.sortBy==='juicio-desc'?' selected':''}>N° Juicio: descendente</option>
+          <option value="juicio-asc"${S.sortBy==='juicio-asc'?' selected':''}>N° Juicio: ascendente</option>
+          <option value="prio"${S.sortBy==='prio'?' selected':''}>Prioridad: urgentes primero</option>
+          <option value="estatus-asc"${S.sortBy==='estatus-asc'?' selected':''}>Estatus: A → Z</option>
+          <option value="estatus-desc"${S.sortBy==='estatus-desc'?' selected':''}>Estatus: Z → A</option>
         </select>
         <input id="listaFilter" value="${esc(S.lf)}" oninput="setFilter(this.value)" placeholder="Filtrar por juicio, demandante o abogado…" style="width:240px">
         ${wr ? `
-          <button class="btn btn-secondary" onclick="downloadTemplate()" style="border-color:#c7d2fe;color:#3730a3;background:#eef2ff" title="Descarga un Excel vacío con las columnas correctas">📋 Plantilla</button>
-          <button class="btn btn-secondary" onclick="document.getElementById('importFile').click()" style="border-color:#a7f3d0;color:#065f46;background:#f0fdf4">📥 Importar Excel</button>
+          <button class="btn btn-secondary" onclick="downloadTemplate()" style="border-color:#c7d2fe;color:#3730a3;background:#eef2ff" title="Descarga un Excel vacío con las columnas correctas">${icon('fileText')} Plantilla</button>
+          <button class="btn btn-secondary" onclick="document.getElementById('importFile').click()" style="border-color:#a7f3d0;color:#065f46;background:#f0fdf4">${icon('upload')} Importar Excel</button>
           <button class="btn btn-primary" onclick="goNew()">+ Nuevo</button>
         ` : ''}
       </div>
     </div>
-    ${S.statusFilter ? `<div style="margin-bottom:12px;padding:8px 12px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;display:flex;align-items:center;gap:10px;font-size:11.5px"><span style="color:#1e40af;font-weight:700">Filtrando por estatus:</span>${bdg(S.statusFilter,true)}<button class="link-btn" style="color:#dc2626;font-size:11.5px;margin-left:auto" onclick="S.statusFilter='';render()">✕ Quitar filtro</button></div>` : ''}
+    ${S.statusFilter ? `<div style="margin-bottom:12px;padding:8px 12px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;display:flex;align-items:center;gap:10px;font-size:11.5px"><span style="color:#1e40af;font-weight:700">Filtrando por estatus:</span>${bdg(S.statusFilter,true)}<button class="link-btn" style="color:#dc2626;font-size:11.5px;margin-left:auto" onclick="S.statusFilter='';render()">${icon('x')} Quitar filtro</button></div>` : ''}
 
     ${S.exps.length===0 ? `
       <div class="card empty">
-        <div class="empty-icon">📂</div>
+        <div class="empty-icon">${icon('folder')}</div>
         <p style="color:#94a3b8;font-size:13px;margin-bottom:12px">No hay expedientes registrados.</p>
         ${wr ? `<button class="btn btn-primary" onclick="goNew()">Registrar el primero</button>` : ''}
       </div>` :
-      arr.length === 0 ? `<div class="card empty"><div class="empty-icon">🔍</div><p style="color:#94a3b8">No hay resultados para el filtro.</p></div>` :
+      arr.length === 0 ? `<div class="card empty"><div class="empty-icon">${icon('search')}</div><p style="color:#94a3b8">No hay resultados para el filtro.</p></div>` :
       `<div>
         ${ad ? `
         <div id="bulkBar" style="display:${S.selected.size>0?'flex':'none'};align-items:center;gap:10px;background:#1e3a5f;border-radius:10px;padding:10px 16px;margin-bottom:10px;flex-wrap:wrap">
           <span id="bulkCount" style="font-size:12.5px;font-weight:800;color:#93c5fd">${S.selected.size} expedientes seleccionados</span>
           <div style="margin-left:auto;display:flex;gap:8px">
-            <button class="btn btn-secondary btn-sm" style="border-color:rgba(255,255,255,0.2);color:#93c5fd;background:rgba(255,255,255,0.08)" onclick="S.selected.clear();render()">✕ Deseleccionar todo</button>
-            <button class="btn btn-danger btn-sm" onclick="doDelSelected()">🗑 Eliminar seleccionados</button>
+            <button class="btn btn-secondary btn-sm" style="border-color:rgba(255,255,255,0.2);color:#93c5fd;background:rgba(255,255,255,0.08)" onclick="S.selected.clear();render()">${icon('x')} Deseleccionar todo</button>
+            <button class="btn btn-danger btn-sm" onclick="doDelSelected()">${icon('trash')} Eliminar seleccionados</button>
           </div>
         </div>` : ''}
         <div class="card" style="padding:0;overflow:hidden">
@@ -1167,7 +1215,7 @@ function rLista() {
               const _yaContestada = (e.oficioContestacion && String(e.oficioContestacion).trim()) ||
                                     (e.fechaOficioContestacion && String(e.fechaOficioContestacion).trim());
               let plazoBadge = _yaContestada
-                ? `<span class="plazo-badge plazo-ok">✓ Contestada${e.fechaOficioContestacion?' · '+fd(e.fechaOficioContestacion):''}</span>`
+                ? `<span class="plazo-badge plazo-ok">${icon('check')} Contestada${e.fechaOficioContestacion?' · '+fd(e.fechaOficioContestacion):''}</span>`
                 : '<span style="color:#cbd5e1;font-size:10.5px">—</span>';
               if (_fl) {
                 const _fd = new Date(_fl+'T00:00:00');
@@ -1179,11 +1227,11 @@ function rLista() {
                   : (e.tipoJuicio === 'Juicio Agrario' ? `<div style="font-size:8px;font-weight:700;color:#64748b;margin-top:2px">Agrario</div>` : '');
                 let _chip;
                 if (_fd < _todayMs) {
-                  _chip = `<span class="plazo-badge plazo-venc">⚠ Vencida hace ${Math.abs(_days)}d</span>`;
+                  _chip = `<span class="plazo-badge plazo-venc">${icon('alertTriangle')} Vencida hace ${Math.abs(_days)}d</span>`;
                 } else if (_fd <= _in10Ms) {
-                  _chip = `<span class="plazo-badge plazo-prox">⏰ ${_days === 0 ? 'Hoy' : _days+'d restantes'}</span>`;
+                  _chip = `<span class="plazo-badge plazo-prox">${icon('clock')} ${_days === 0 ? 'Hoy' : _days+'d restantes'}</span>`;
                 } else {
-                  _chip = `<span class="plazo-badge plazo-proc">📋 ${_days}d restantes</span>`;
+                  _chip = `<span class="plazo-badge plazo-proc">${icon('clipboardList')} ${_days}d restantes</span>`;
                 }
                 plazoBadge = `<div>${_chip}${_viaLabel}</div>`;
               }
@@ -1220,7 +1268,7 @@ function rLista() {
 function rForm() {
   if (!canWrite()) return `
     <div class="card" style="padding:40px;text-align:center">
-      <div style="font-size:36px;margin-bottom:12px">⛔</div>
+      <div style="font-size:36px;margin-bottom:12px;color:#dc2626">${icon('ban')}</div>
       <p style="color:#dc2626;font-weight:800;font-size:14px">Sin permisos de edición</p>
       <p style="color:#94a3b8;font-size:12.5px;margin:8px 0 16px">Tu cuenta tiene acceso de solo lectura.</p>
       <button class="btn btn-secondary" onclick="sv('lista')">Volver a la lista</button>
@@ -1323,10 +1371,10 @@ function detB(e){
   const wr     = canWrite();
 
   const tabs = `<div class="det-tabs">
-    <button class="det-tab${tab==='info'?'  active':''}"     onclick="S.detTab='info';render()">📋 Información</button>
-    <button class="det-tab${tab==='timeline'?' active':''}"  onclick="S.detTab='timeline';render()">📊 Actuaciones</button>
-    <button class="det-tab${tab==='tareas'?'  active':''}"   onclick="S.detTab='tareas';render()">✅ Tareas${pend>0?` <span style="background:#dc2626;color:white;font-size:10.5px;padding:1px 6px;border-radius:999px;margin-left:3px">${pend}</span>`:''}</button>
-    <button class="det-tab${tab==='docs'?'    active':''}"   onclick="S.detTab='docs';loadDocs('${e.id}');render()">📎 Documentos</button>
+    <button class="det-tab${tab==='info'?'  active':''}"     onclick="S.detTab='info';render()">${icon('clipboardList')} Información</button>
+    <button class="det-tab${tab==='timeline'?' active':''}"  onclick="S.detTab='timeline';render()">${icon('barChart')} Actuaciones</button>
+    <button class="det-tab${tab==='tareas'?'  active':''}"   onclick="S.detTab='tareas';render()">${icon('checkCircle')} Tareas${pend>0?` <span style="background:#dc2626;color:white;font-size:10.5px;padding:1px 6px;border-radius:999px;margin-left:3px">${pend}</span>`:''}</button>
+    <button class="det-tab${tab==='docs'?'    active':''}"   onclick="S.detTab='docs';loadDocs('${e.id}');render()">${icon('paperclip')} Documentos</button>
   </div>`;
 
   let body = '';
@@ -1348,7 +1396,7 @@ function detB(e){
     ${e.notas?secT('Notas')+`<p style="font-size:12.5px;color:#1e293b;white-space:pre-wrap;line-height:1.6;margin-top:4px">${esc(e.notas)}</p>`:''}
     ${secT('Historial de Cambios')}
     <div id="detHistory" style="min-height:40px">
-      <button onclick="loadDetHistory('${e.id}')" style="font-size:11.5px;color:#2563eb;background:none;border:1px dashed #bfdbfe;border-radius:7px;padding:6px 16px;cursor:pointer;width:100%;font-family:inherit">📋 Cargar historial de este expediente</button>
+      <button onclick="loadDetHistory('${e.id}')" style="font-size:11.5px;color:#2563eb;background:none;border:1px dashed #bfdbfe;border-radius:7px;padding:6px 16px;cursor:pointer;width:100%;font-family:inherit">${icon('clipboardList')} Cargar historial de este expediente</button>
     </div>`;
   else if (tab === 'timeline') body = rTimeline(e);
   else if (tab === 'tareas')   body = rTareas(e);
@@ -1405,12 +1453,12 @@ function rBuscar(){
         <input value="${esc(S.sq)}" oninput="S.sq=this.value;S.sdone=false;S.srs=[]" onkeydown="if(event.key==='Enter')doSearch()"
           placeholder="Escribe el N° de juicio, nombre del demandante o N° CNA…" style="flex:1">
         <button class="btn btn-primary" onclick="doSearch()">Buscar</button>
-        ${S.sdone ? `<button class="btn btn-secondary" onclick="S.sq='';S.sdone=false;S.srs=[];render()">✕ Limpiar</button>` : ''}
+        ${S.sdone ? `<button class="btn btn-secondary" onclick="S.sq='';S.sdone=false;S.srs=[];render()">${icon('x')} Limpiar</button>` : ''}
       </div>
     </div>
     ${S.sdone && !res.length ? `
       <div class="card empty">
-        <div class="empty-icon">🔍</div>
+        <div class="empty-icon">${icon('search')}</div>
         <p style="color:#94a3b8;font-size:12.5px">No se encontraron expedientes que coincidan con <strong>"${esc(q)}"</strong>.</p>
       </div>` : ''}
     ${S.sdone && res.length ? `
@@ -1488,16 +1536,16 @@ function rReportes(){
   const byAb=S.exps.reduce((a,e)=>{const k=e.abogadoResponsable||'Sin asignar';if(!a[k])a[k]=[];a[k].push(e);return a;},{});
   const mT=(rows,cols,hdrs,dc)=>`<div class="mt-wrap"><table class="mt"><thead><tr>${hdrs.map(h=>`<th>${h}</th>`).join('')}</tr></thead><tbody>${rows.map((r,i)=>`<tr style="background:${i%2?'#fafbfc':'white'}">${cols.map(c=>`<td style="${c==='numeroJuicio'?'font-weight:800;color:#1e3a5f':'color:#374151'}">${c==='estatus'?bdg(r[c],true):c===dc?fd(r[c]):esc(r[c])||'—'}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
   const none='<p style="text-align:center;color:#94a3b8;padding:36px;font-size:12.5px">No hay expedientes registrados.</p>';
-  const tabs=[['estatus','📊 Por Estatus'],['audiencias','📅 Audiencias Próximas'],['abogado','👤 Por Abogado'],['general','📋 Listado General']];
+  const tabs=[['estatus',`${icon('barChart')} Por Estatus`],['audiencias',`${icon('calendar')} Audiencias Próximas`],['abogado',`${icon('user')} Por Abogado`],['general',`${icon('list')} Listado General`]];
   let body='';
   if(S.rep==='estatus'){
     body=`<b style="color:#0f2044">Juicios por Estatus</b><div style="font-size:11.5px;color:#94a3b8;margin:3px 0 14px">Total: ${S.exps.length}</div>${S.exps.length===0?none:ESTATUS.map(s=>{const l=bySt[s]||[];return l.length?`<div style="margin-bottom:18px"><div style="display:flex;align-items:center;gap:8px;margin-bottom:5px">${bdg(s)}<span style="font-size:10.5px;color:#94a3b8;font-weight:700">${l.length} exp.</span></div>${mT(l,['numeroJuicio','demandante','abogadoResponsable','fechaEstatus'],['N° Juicio','Demandante','Abogado','Fecha Estatus'],'fechaEstatus')}</div>`:''}).join('')}${S.exps.length?`<div style="border-top:1px solid #f1f5f9;padding-top:14px;margin-top:6px"><p style="font-size:10.5px;font-weight:900;color:#94a3b8;text-transform:uppercase;letter-spacing:.12em;margin-bottom:10px">Resumen</p><div style="display:grid;grid-template-columns:1fr 1fr;gap:7px">${ESTATUS.map(s=>{const n=(bySt[s]||[]).length;return n?`<div style="display:flex;align-items:center;justify-content:space-between;background:#f8fafc;border-radius:9px;padding:7px 12px">${bdg(s,true)}<span style="font-size:13px;font-weight:900;color:#0f2044">${n}</span></div>`:''}).join('')}</div></div>`:''}`;
   }else if(S.rep==='audiencias'){
-    body=`<b style="color:#0f2044">Audiencias Próximas</b><div style="font-size:11.5px;color:#94a3b8;margin:3px 0 14px">Próximos 30 días · hasta el ${in30.toLocaleDateString('es-MX',{day:'2-digit',month:'long',year:'numeric'})}</div>${prox.length===0?'<div style="text-align:center;padding:44px"><div style="font-size:32px;margin-bottom:10px">📅</div><p style="color:#94a3b8;font-size:12.5px">No hay audiencias en los próximos 30 días.</p></div>':`<div style="margin-bottom:10px"><span style="background:#fee2e2;color:#991b1b;font-size:10.5px;font-weight:800;padding:3px 12px;border-radius:999px">${prox.length} audiencia(s) próxima(s)</span></div>${mT(prox,['fechaProximaAudiencia','numeroJuicio','demandante','abogadoResponsable','estatus'],['Fecha','N° Juicio','Demandante','Abogado','Estatus'],'fechaProximaAudiencia')}`}`;
+    body=`<b style="color:#0f2044">Audiencias Próximas</b><div style="font-size:11.5px;color:#94a3b8;margin:3px 0 14px">Próximos 30 días · hasta el ${in30.toLocaleDateString('es-MX',{day:'2-digit',month:'long',year:'numeric'})}</div>${prox.length===0?`<div style="text-align:center;padding:44px"><div style="font-size:32px;margin-bottom:10px;color:#cbd5e1">${icon('calendar')}</div><p style="color:#94a3b8;font-size:12.5px">No hay audiencias en los próximos 30 días.</p></div>`:`<div style="margin-bottom:10px"><span style="background:#fee2e2;color:#991b1b;font-size:10.5px;font-weight:800;padding:3px 12px;border-radius:999px">${prox.length} audiencia(s) próxima(s)</span></div>${mT(prox,['fechaProximaAudiencia','numeroJuicio','demandante','abogadoResponsable','estatus'],['Fecha','N° Juicio','Demandante','Abogado','Estatus'],'fechaProximaAudiencia')}`}`;
   }else if(S.rep==='abogado'){
     body=`<b style="color:#0f2044">Por Abogado Responsable</b><div style="font-size:11.5px;color:#94a3b8;margin:3px 0 14px">${Object.keys(byAb).length} abogado(s)</div>${S.exps.length===0?none:Object.entries(byAb).sort((a,b)=>b[1].length-a[1].length).map(([ab,l])=>`<div style="margin-bottom:18px"><div style="display:flex;align-items:center;gap:8px;margin-bottom:7px"><div style="width:26px;height:26px;border-radius:50%;background:#dbeafe;display:flex;align-items:center;justify-content:center;font-size:11.5px;font-weight:900;color:#1e40af">${(ab[0]||'?').toUpperCase()}</div><span style="font-size:12.5px;font-weight:900;color:#0f2044">${esc(ab)}</span><span style="font-size:10.5px;color:#94a3b8;font-weight:700">${l.length} juicio(s)</span></div>${mT(l,['numeroJuicio','demandante','tipoTramite','estatus'],['N° Juicio','Demandante','Tipo Trámite','Estatus'])}</div>`).join('')}`;
   }else{
-    body=`<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:14px"><div><b style="color:#0f2044">Listado General</b><div style="font-size:11.5px;color:#94a3b8;margin-top:3px">Total: ${S.exps.length} expediente(s)</div></div>${S.exps.length>0?`<button class="btn btn-success" onclick="exportToExcel()" style="display:flex;align-items:center;gap:6px"><span style="font-size:14px">📊</span> Exportar a Excel</button>`:''}</div>${S.exps.length===0?none:`<div style="overflow-x:auto"><table class="tbl" style="font-size:10.5px"><thead><tr>${['N° Juicio','Exp. Interno','Demandante','Sala','U. Admva.','Tipo Trámite','Abogado','F. Emplazamiento','F. Sentencia','Suspensión','Estatus'].map(h=>`<th style="font-size:8px">${h}</th>`).join('')}</tr></thead><tbody>${S.exps.map((e,i)=>`<tr style="background:${i%2?'#fafbfc':'white'}"><td style="font-weight:800;color:#1e3a5f">${esc(e.numeroJuicio)}</td><td style="color:#64748b">${esc(e.numeroExpedienteInterno)||'—'}</td><td style="max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(e.demandante)||'—'}</td><td>${esc(e.sala)||'—'}</td><td>${esc(e.unidadAdministrativa)||'—'}</td><td>${esc(e.tipoTramite)||'—'}</td><td>${esc(e.abogadoResponsable)||'—'}</td><td>${fd(e.fechaEmplazamiento)}</td><td>${fd(e.fechaSentencia)}</td><td><span style="font-size:10.5px;font-weight:800;padding:2px 7px;border-radius:999px;background:${e.suspension==='Sí'?'#fef3c7':'#f1f5f9'};color:${e.suspension==='Sí'?'#92400e':'#64748b'}">${esc(e.suspension)||'—'}</span></td><td>${bdg(e.estatus,true)}</td></tr>`).join('')}</tbody></table></div>`}`;
+    body=`<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:14px"><div><b style="color:#0f2044">Listado General</b><div style="font-size:11.5px;color:#94a3b8;margin-top:3px">Total: ${S.exps.length} expediente(s)</div></div>${S.exps.length>0?`<button class="btn btn-success" onclick="exportToExcel()" style="display:flex;align-items:center;gap:6px">${icon('barChart')} Exportar a Excel</button>`:''}</div>${S.exps.length===0?none:`<div style="overflow-x:auto"><table class="tbl" style="font-size:10.5px"><thead><tr>${['N° Juicio','Exp. Interno','Demandante','Sala','U. Admva.','Tipo Trámite','Abogado','F. Emplazamiento','F. Sentencia','Suspensión','Estatus'].map(h=>`<th style="font-size:8px">${h}</th>`).join('')}</tr></thead><tbody>${S.exps.map((e,i)=>`<tr style="background:${i%2?'#fafbfc':'white'}"><td style="font-weight:800;color:#1e3a5f">${esc(e.numeroJuicio)}</td><td style="color:#64748b">${esc(e.numeroExpedienteInterno)||'—'}</td><td style="max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(e.demandante)||'—'}</td><td>${esc(e.sala)||'—'}</td><td>${esc(e.unidadAdministrativa)||'—'}</td><td>${esc(e.tipoTramite)||'—'}</td><td>${esc(e.abogadoResponsable)||'—'}</td><td>${fd(e.fechaEmplazamiento)}</td><td>${fd(e.fechaSentencia)}</td><td><span style="font-size:10.5px;font-weight:800;padding:2px 7px;border-radius:999px;background:${e.suspension==='Sí'?'#fef3c7':'#f1f5f9'};color:${e.suspension==='Sí'?'#92400e':'#64748b'}">${esc(e.suspension)||'—'}</span></td><td>${bdg(e.estatus,true)}</td></tr>`).join('')}</tbody></table></div>`}`;
   }
   return `<div><div class="sbar"><div class="sbar-line"></div><span class="sbar-title">Reportes</span></div><div class="rtabs">${tabs.map(([id,l])=>`<button class="rtab${S.rep===id?' active':''}" onclick="S.rep='${id}';render()">${l}</button>`).join('')}</div><div class="card">${body}</div></div>`;
 }
@@ -1528,17 +1576,17 @@ function renderCambios(cambios) {
 
 function accionBdg(accion) {
   const map = {
-    CREAR:    {bg:'#d1fae5',c:'#065f46',icon:'✚'},
-    EDITAR:   {bg:'#dbeafe',c:'#1e40af',icon:'✎'},
-    ELIMINAR: {bg:'#fee2e2',c:'#991b1b',icon:'✕'},
-    IMPORTAR: {bg:'#ede9fe',c:'#5b21b6',icon:'⬇'}
+    CREAR:    {bg:'#d1fae5',c:'#065f46',icon:'plus'},
+    EDITAR:   {bg:'#dbeafe',c:'#1e40af',icon:'edit'},
+    ELIMINAR: {bg:'#fee2e2',c:'#991b1b',icon:'x'},
+    IMPORTAR: {bg:'#ede9fe',c:'#5b21b6',icon:'upload'}
   };
-  const x = map[accion] || {bg:'#f1f5f9',c:'#64748b',icon:'•'};
-  return `<span style="background:${x.bg};color:${x.c};font-weight:800;font-size:10.5px;padding:2px 8px;border-radius:999px;white-space:nowrap">${x.icon} ${accion}</span>`;
+  const x = map[accion] || {bg:'#f1f5f9',c:'#64748b',icon:''};
+  return `<span style="background:${x.bg};color:${x.c};font-weight:800;font-size:10.5px;padding:2px 8px;border-radius:999px;white-space:nowrap;display:inline-flex;align-items:center;gap:4px">${x.icon?icon(x.icon):''} ${accion}</span>`;
 }
 
 function rBitacoraList(rows) {
-  if (!rows.length) return '<div style="text-align:center;padding:44px 0"><div style="font-size:28px;margin-bottom:8px">📋</div><p style="color:#94a3b8;font-size:12.5px">No hay registros en la bitácora.</p></div>';
+  if (!rows.length) return `<div style="text-align:center;padding:44px 0"><div style="font-size:28px;margin-bottom:8px;color:#cbd5e1">${icon('clipboardList')}</div><p style="color:#94a3b8;font-size:12.5px">No hay registros en la bitácora.</p></div>`;
   return rows.map(r => `
     <div style="display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:start;padding:12px 0;border-bottom:1px solid #f1f5f9">
       <div style="display:flex;flex-direction:column;align-items:center;gap:5px;min-width:70px">
@@ -1548,7 +1596,7 @@ function rBitacoraList(rows) {
       <div>
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;flex-wrap:wrap">
           <span style="font-weight:900;font-size:11.5px;color:#1e3a5f">${esc(r.numero_juicio)||'—'}</span>
-          <span style="font-size:10.5px;color:#64748b;background:#f8fafc;padding:1px 7px;border-radius:4px">👤 ${esc(r.usuario)}</span>
+          <span style="font-size:10.5px;color:#64748b;background:#f8fafc;padding:1px 7px;border-radius:4px;display:inline-flex;align-items:center;gap:3px">${icon('user')} ${esc(r.usuario)}</span>
         </div>
         <div style="font-size:10.5px;line-height:1.7">${renderCambios(r.cambios)}</div>
       </div>
@@ -1565,12 +1613,12 @@ function rBitacora() {
         <span class="sbar-title">Bitácora de Cambios</span>
         ${rows.length ? `<span style="font-size:10.5px;font-weight:800;background:#dbeafe;color:#1e40af;padding:2px 9px;border-radius:999px">${rows.length}</span>` : ''}
       </div>
-      <button class="btn btn-secondary" onclick="refreshBitacora()" style="font-size:11.5px">↺ Actualizar</button>
+      <button class="btn btn-secondary" onclick="refreshBitacora()" style="font-size:11.5px;display:inline-flex;align-items:center;gap:5px">${icon('refreshCw')} Actualizar</button>
     </div>
     <div class="card">
       <p style="font-size:10.5px;color:#94a3b8;margin-bottom:14px">Registro completo de quién creó, editó o eliminó cada expediente y qué campos cambiaron.</p>
       ${loading
-        ? '<div style="text-align:center;padding:32px;color:#94a3b8;font-size:12.5px">⏳ Cargando bitácora…</div>'
+        ? `<div style="text-align:center;padding:32px;color:#94a3b8;font-size:12.5px">${icon('loader','icon-spin')} Cargando bitácora…</div>`
         : rBitacoraList(rows)
       }
     </div>
@@ -1586,7 +1634,7 @@ async function refreshBitacora() {
 async function loadDetHistory(expedienteId) {
   const el = document.getElementById('detHistory');
   if (!el) return;
-  el.innerHTML = '<div style="text-align:center;padding:20px;color:#94a3b8;font-size:11.5px">⏳ Cargando historial…</div>';
+  el.innerHTML = `<div style="text-align:center;padding:20px;color:#94a3b8;font-size:11.5px">${icon('loader','icon-spin')} Cargando historial…</div>`;
   const rows = await loadBitacora(expedienteId);
   el.innerHTML = rows.length
     ? rBitacoraList(rows)
@@ -1616,7 +1664,7 @@ async function loadBoletin(){
 
 function boletinNavLabel(){
   const p = S.boletinHits.filter(h=>esBoletinRelevante(h) && !h.revisado).length;
-  return '📢 Boletín' + (p ? ` <span style="background:#ef4444;color:#fff;border-radius:999px;padding:0 6px;font-size:10.5px;font-weight:900">${p}</span>` : '');
+  return `${icon('bell')} Boletín` + (p ? ` <span style="background:#ef4444;color:#fff;border-radius:999px;padding:0 6px;font-size:10.5px;font-weight:900">${p}</span>` : '');
 }
 
 function setBoletinFilter(f){ S.boletinFilter = f; render(); }
@@ -1674,8 +1722,8 @@ function rBoletin(){
   const chip=(id,l,n,col)=>`<button onclick="setBoletinFilter('${id}')" style="padding:6px 13px;border-radius:999px;border:1px solid ${f===id?col:'#e2e8f0'};background:${f===id?col:'#fff'};color:${f===id?'#fff':'#475569'};font-size:11.5px;font-weight:800;cursor:pointer;font-family:inherit">${l} (${n})</button>`;
 
   const empty = !S.boletinLoaded
-    ? `<div style="text-align:center;padding:44px;color:#94a3b8;font-size:12.5px">⏳ Cargando novedades…</div>`
-    : `<div style="text-align:center;padding:44px"><div style="font-size:32px;margin-bottom:10px">📭</div><p style="color:#94a3b8;font-size:12.5px">No hay novedades para este filtro.</p>${total===0?'<p style="color:#cbd5e1;font-size:10.5px;margin-top:6px">Si el agente ya corrió y esto sigue vacío, revisa la política RLS de lectura sobre la tabla boletin_hits.</p>':''}</div>`;
+    ? `<div style="text-align:center;padding:44px;color:#94a3b8;font-size:12.5px">${icon('loader','icon-spin')} Cargando novedades…</div>`
+    : `<div style="text-align:center;padding:44px"><div style="font-size:32px;margin-bottom:10px;color:#cbd5e1">${icon('inbox')}</div><p style="color:#94a3b8;font-size:12.5px">No hay novedades para este filtro.</p>${total===0?'<p style="color:#cbd5e1;font-size:10.5px;margin-top:6px">Si el agente ya corrió y esto sigue vacío, revisa la política RLS de lectura sobre la tabla boletin_hits.</p>':''}</div>`;
 
   const filas = arr.map(h=>{
     const rev = !!h.revisado;
@@ -1689,8 +1737,8 @@ function rBoletin(){
       <td style="white-space:nowrap">
         ${linked?`<button class="link-btn" style="color:#2563eb;font-weight:800" onclick="verExpBoletin('${esc(h.expediente_id)}')">Ver exp.</button> <span style="color:#e2e8f0">|</span> `:''}
         ${rev
-          ?`<button class="link-btn" style="color:#94a3b8" onclick="marcarRevisado('${h.id}',false)">↩ Reabrir</button>`
-          :`<button class="link-btn" style="color:#059669;font-weight:800" onclick="marcarRevisado('${h.id}',true)">✓ Revisado</button>`}
+          ?`<button class="link-btn" style="color:#94a3b8;display:inline-flex;align-items:center;gap:4px" onclick="marcarRevisado('${h.id}',false)">${icon('cornerDownLeft')} Reabrir</button>`
+          :`<button class="link-btn" style="color:#059669;font-weight:800;display:inline-flex;align-items:center;gap:4px" onclick="marcarRevisado('${h.id}',true)">${icon('check')} Revisado</button>`}
       </td></tr>`;
   }).join('');
 
@@ -1698,10 +1746,10 @@ function rBoletin(){
   <div style="background:white;border-radius:14px;border:1px solid #e2e8f0;padding:18px 20px;margin-bottom:16px">
     <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:6px">
       <div>
-        <b style="color:#0f2044;font-size:15px">📢 Novedades del Boletín Jurisdiccional (TFJA)</b>
+        <b style="color:#0f2044;font-size:15px;display:inline-flex;align-items:center;gap:6px">${icon('bell')} Novedades del Boletín Jurisdiccional (TFJA)</b>
         <div style="font-size:11.5px;color:#94a3b8;margin-top:3px">Acuerdos que mencionan a CONAGUA / OCPBC en la Península. La notificación surte efectos al 3er día hábil siguiente a la publicación.</div>
       </div>
-      <button class="btn btn-success" onclick="exportBoletin()" style="display:flex;align-items:center;gap:6px"><span style="font-size:14px">📊</span> Exportar CSV</button>
+      <button class="btn btn-success" onclick="exportBoletin()" style="display:flex;align-items:center;gap:6px">${icon('barChart')} Exportar CSV</button>
     </div>
     <div style="display:flex;gap:8px;flex-wrap:wrap;margin:12px 0 14px">
       ${chip('pendientes','Pendientes',pend,'#ef4444')}
@@ -1771,7 +1819,7 @@ async function logBitacora(expedienteId, numeroJuicio, accion, cambios) {
     if (error) throw error;
   } catch(e) {
     console.warn('Bitácora error:', e.message);
-    showToast('⚠️ Cambio guardado pero no se registró en bitácora: ' + e.message, true);
+    showToast('Cambio guardado pero no se registró en bitácora: ' + e.message, true);
   }
 }
 
@@ -1845,7 +1893,7 @@ function rImportar(){
         <span style="font-size:11.5px;color:#94a3b8">Columnas: ${headers.map(h=>`<strong>${esc(h.name)}</strong>`).join(', ')}</span>
         <div style="margin-left:auto;display:flex;gap:8px">
           <button class="btn btn-secondary" onclick="importData=null;sv('lista')">Cancelar</button>
-          <button class="btn btn-primary" onclick="doImport()">✓ Importar ${rows.length} expedientes</button>
+          <button class="btn btn-primary" onclick="doImport()">${icon('check')} Importar ${rows.length} expedientes</button>
         </div>
       </div>
     </div>
@@ -1965,7 +2013,7 @@ async function doImport(){
     showToast(`${okMsg} · ${totalFailed} fallaron. Revisa el detalle.`, true);
     alert(`Se guardaron: ${okMsg || 'ninguno'}.\n\n${totalFailed} expediente(s) NO se pudieron guardar:\n\n${detalle}\n\nCorrígelos en el Excel y vuelve a importar solo esas filas.`);
   }else{
-    showToast('✓ '+okMsg);
+    showToast(okMsg);
   }
   S.view='lista';
   render();
@@ -2138,7 +2186,7 @@ function firmezaPanelHTML(e, editable) {
     else if (diasC > 10)                 { panelClass = 'warn'; }
     else                                 { panelClass = 'urgent'; }
 
-    const cumplIcon = diasC < 0 ? '🔴' : diasC <= 10 ? '🟠' : diasC <= 30 ? '🟡' : '🟢';
+    const cumplIcon = dotIc(diasC < 0 ? '#dc2626' : diasC <= 10 ? '#ea580c' : diasC <= 30 ? '#eab308' : '#16a34a');
     const cumplTxt  = diasC < 0
       ? `Vencido hace ${Math.abs(diasC)} días`
       : diasC === 0 ? 'Vence HOY'
@@ -2151,7 +2199,7 @@ function firmezaPanelHTML(e, editable) {
 
   return `<div class="firmeza-panel ${panelClass}" style="margin-top:10px">
     <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-      <span style="font-size:13px">⚖</span>
+      <span style="font-size:13px">${icon('scale')}</span>
       <span style="font-size:12.5px;font-weight:900;color:#0f2044">Firmeza y Cumplimiento (LFPCA)</span>
       ${firmezaFutura ? '<span style="font-size:10.5px;font-weight:800;background:#e0f2fe;color:#0369a1;padding:2px 8px;border-radius:999px">Estimada</span>' : '<span style="font-size:10.5px;font-weight:800;background:#d1fae5;color:#065f46;padding:2px 8px;border-radius:999px">Vigente</span>'}
     </div>
@@ -2180,7 +2228,7 @@ function firmezaPanelHTML(e, editable) {
         <span style="font-size:11.5px;color:#94a3b8;font-style:italic">No aplica — el efecto de la sentencia no implica plazo de cumplimiento (Art. 58 LFPCA)</span>
       </div>`}
     </div>
-    ${editable ? `<p style="font-size:10.5px;color:#94a3b8;margin-top:10px;border-top:1px solid rgba(0,0,0,.06);padding-top:8px">💡 La firmeza es editable. Si ya se interpuso recurso de revisión, ajusta la fecha manualmente una vez que sea resuelta. El campo se guarda con el expediente.</p>` : ''}
+    ${editable ? `<p style="font-size:10.5px;color:#94a3b8;margin-top:10px;border-top:1px solid rgba(0,0,0,.06);padding-top:8px">${icon('lightbulb')} La firmeza es editable. Si ya se interpuso recurso de revisión, ajusta la fecha manualmente una vez que sea resuelta. El campo se guarda con el expediente.</p>` : ''}
   </div>`;
 }
 
@@ -2204,30 +2252,30 @@ function checkEventos() {
     if (e.fechaProximaAudiencia) {
       const d = new Date(e.fechaProximaAudiencia+'T00:00:00');
       const diff = Math.round((d - today) / 86400000);
-      if (diff === 0) evs.push({tipo:'red',  msg:'🎤 Audiencia HOY: '+e.numeroJuicio+(e.sala?' · '+e.sala:''), expId:e.id});
-      else if (diff > 0 && diff <= 3) evs.push({tipo:'yellow', msg:`🎤 Audiencia en ${diff}d: `+e.numeroJuicio, expId:e.id});
+      if (diff === 0) evs.push({tipo:'red',  msg:'Audiencia HOY: '+e.numeroJuicio+(e.sala?' · '+e.sala:''), expId:e.id});
+      else if (diff > 0 && diff <= 3) evs.push({tipo:'yellow', msg:`Audiencia en ${diff}d: `+e.numeroJuicio, expId:e.id});
     }
     const fl = window._getFechaLimitePlazo ? window._getFechaLimitePlazo(e) : null;
     if (fl) {
       const d = new Date(fl+'T00:00:00');
       const diff = Math.round((d - today) / 86400000);
-      if (diff < 0)             evs.push({tipo:'red',    msg:`⚠ Plazo vencido hace ${Math.abs(diff)}d: `+e.numeroJuicio, expId:e.id});
-      else if (diff <= 3)       evs.push({tipo:'yellow', msg:`⏰ Plazo vence en ${diff||'hoy'}: `+e.numeroJuicio, expId:e.id});
+      if (diff < 0)             evs.push({tipo:'red',    msg:`Plazo vencido hace ${Math.abs(diff)}d: `+e.numeroJuicio, expId:e.id});
+      else if (diff <= 3)       evs.push({tipo:'yellow', msg:`Plazo vence en ${diff||'hoy'}: `+e.numeroJuicio, expId:e.id});
     }
     const tareas = Array.isArray(e.tareas) ? e.tareas : [];
     tareas.filter(t=>!t.completada && t.fechaLimite).forEach(t => {
       const d = new Date(t.fechaLimite+'T00:00:00');
       const diff = Math.round((d - today) / 86400000);
-      if (diff < 0)       evs.push({tipo:'red',    msg:`📋 Tarea vencida: ${t.titulo} (${e.numeroJuicio})`, expId:e.id});
-      else if (diff <= 2) evs.push({tipo:'yellow', msg:`📋 Tarea próxima: ${t.titulo}`, expId:e.id});
+      if (diff < 0)       evs.push({tipo:'red',    msg:`Tarea vencida: ${t.titulo} (${e.numeroJuicio})`, expId:e.id});
+      else if (diff <= 2) evs.push({tipo:'yellow', msg:`Tarea próxima: ${t.titulo}`, expId:e.id});
     });
     // Cumplimiento de sentencia (Art. 58 LFPCA)
     if (e.fechaVencimientoCumplimiento && isParaEfectos(e.efectoSentencia)) {
       const d    = new Date(e.fechaVencimientoCumplimiento+'T00:00:00');
       const diff = Math.round((d - today) / 86400000);
-      if (diff < 0)        evs.push({tipo:'red',    msg:`⚖ Cumpl. VENCIDO hace ${Math.abs(diff)}d: `+e.numeroJuicio, expId:e.id});
-      else if (diff <= 10) evs.push({tipo:'red',    msg:`⚖ Cumpl. en ${diff}d: `+e.numeroJuicio, expId:e.id});
-      else if (diff <= 30) evs.push({tipo:'yellow', msg:`⚖ Cumpl. en ${diff}d: `+e.numeroJuicio, expId:e.id});
+      if (diff < 0)        evs.push({tipo:'red',    msg:`Cumpl. VENCIDO hace ${Math.abs(diff)}d: `+e.numeroJuicio, expId:e.id});
+      else if (diff <= 10) evs.push({tipo:'red',    msg:`Cumpl. en ${diff}d: `+e.numeroJuicio, expId:e.id});
+      else if (diff <= 30) evs.push({tipo:'yellow', msg:`Cumpl. en ${diff}d: `+e.numeroJuicio, expId:e.id});
     }
   });
   S.notifEventos = evs;
@@ -2243,7 +2291,7 @@ function renderNotifBanner() {
   const show = [...reds, ...yels].slice(0, 8);
   return `<div class="notif-banner" style="margin:-20px -20px 20px">
     <div class="notif-body">
-      <div class="notif-title">🔔 ${evs.length} alerta${evs.length!==1?'s':''} hoy</div>
+      <div class="notif-title">${icon('bell')} ${evs.length} alerta${evs.length!==1?'s':''} hoy</div>
       <div class="notif-chips">
         ${show.map(e=>`<span class="notif-chip ${e.tipo==='red'?'nc-red':'nc-yellow'}" onclick="showDet('${e.expId}')">${esc(e.msg)}</span>`).join('')}
         ${evs.length > 8 ? `<span style="font-size:10.5px;color:#fde68a;align-self:center">+${evs.length-8} más</span>` : ''}
@@ -2270,14 +2318,14 @@ function rCalendario() {
     evMap[k].push({cls, lbl, expId});
   };
   S.exps.forEach(e => {
-    addEv(e.fechaProximaAudiencia,      'ev-a', '🎤 '+e.numeroJuicio, e.id);
-    addEv(e.fechaContestacion,          'ev-c', '⏰ Cont. '+e.numeroJuicio, e.id);
-    addEv(e.fechaEmplazamiento,         'ev-e', '📬 Emplaz. '+e.numeroJuicio, e.id);
-    addEv(e.fechaSentencia,             'ev-s', '⚖ Sent. '+e.numeroJuicio, e.id);
-    addEv(e.fechaNotificacionSuspension,'ev-x', '⛔ Susp. '+e.numeroJuicio, e.id);
-    addEv(e.fechaOficioContestacion,    'ev-o', '📄 Oficio Cont.', e.id);
-    addEv(e.fechaOficioAmpliacion,      'ev-o', '📄 Oficio Amp.', e.id);
-    addEv(e.fechaOficioAlegatos,        'ev-o', '📄 Oficio Aleg.', e.id);
+    addEv(e.fechaProximaAudiencia,      'ev-a', e.numeroJuicio, e.id);
+    addEv(e.fechaContestacion,          'ev-c', 'Cont. '+e.numeroJuicio, e.id);
+    addEv(e.fechaEmplazamiento,         'ev-e', 'Emplaz. '+e.numeroJuicio, e.id);
+    addEv(e.fechaSentencia,             'ev-s', 'Sent. '+e.numeroJuicio, e.id);
+    addEv(e.fechaNotificacionSuspension,'ev-x', 'Susp. '+e.numeroJuicio, e.id);
+    addEv(e.fechaOficioContestacion,    'ev-o', 'Oficio Cont.', e.id);
+    addEv(e.fechaOficioAmpliacion,      'ev-o', 'Oficio Amp.', e.id);
+    addEv(e.fechaOficioAlegatos,        'ev-o', 'Oficio Aleg.', e.id);
   });
 
   const DAY_NAMES = ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
@@ -2357,17 +2405,17 @@ function rTareas(e) {
       <span style="font-size:10.5px;font-weight:800;background:#fef3c7;color:#92400e;padding:2px 10px;border-radius:999px">${pend} pendiente${pend!==1?'s':''}</span>
       <span style="font-size:10.5px;font-weight:800;background:#d1fae5;color:#065f46;padding:2px 10px;border-radius:999px">${done} completada${done!==1?'s':''}</span>
     </div>
-    ${tareas.length===0 ? `<div style="text-align:center;padding:30px 0"><div style="font-size:28px;margin-bottom:8px">✅</div><p style="color:#94a3b8;font-size:12.5px">Sin tareas registradas.</p></div>` :
+    ${tareas.length===0 ? `<div style="text-align:center;padding:30px 0"><div style="font-size:28px;margin-bottom:8px;color:#cbd5e1">${icon('checkCircle')}</div><p style="color:#94a3b8;font-size:12.5px">Sin tareas registradas.</p></div>` :
       tareas.map(t => {
         const ti = TT_MAP[t.tipo||'general'];
         return `<div class="tarea-item${t.completada?' done':''}">
-          ${wr ? `<input type="checkbox" class="tarea-cb" ${t.completada?'checked':''} onchange="doToggleTarea('${e.id}','${t.id}')">` : `<span style="font-size:14px;margin-top:1px">${t.completada?'✅':'⬜'}</span>`}
+          ${wr ? `<input type="checkbox" class="tarea-cb" ${t.completada?'checked':''} onchange="doToggleTarea('${e.id}','${t.id}')">` : `<span style="font-size:14px;margin-top:1px;color:${t.completada?'#059669':'#cbd5e1'}">${t.completada?icon('checkCircle'):icon('circle')}</span>`}
           <div class="tarea-info">
             <div class="tarea-titulo">${esc(t.titulo)}</div>
             <div class="tarea-meta">
               <span class="tarea-bdg" style="background:${ti.bg};color:${ti.c}">${ti.l}</span>
-              ${t.fechaLimite ? `<span>📅 ${fd(t.fechaLimite)}</span>` : ''}
-              ${t.completada && t.completadaEn ? `<span>✓ ${new Date(t.completadaEn).toLocaleDateString('es-MX',{day:'2-digit',month:'short'})}</span>` : ''}
+              ${t.fechaLimite ? `<span style="display:inline-flex;align-items:center;gap:3px">${icon('calendar')} ${fd(t.fechaLimite)}</span>` : ''}
+              ${t.completada && t.completadaEn ? `<span style="display:inline-flex;align-items:center;gap:3px">${icon('check')} ${new Date(t.completadaEn).toLocaleDateString('es-MX',{day:'2-digit',month:'short'})}</span>` : ''}
             </div>
           </div>
           ${wr ? `<button onclick="doDelTarea('${e.id}','${t.id}')" style="background:none;border:none;cursor:pointer;color:#cbd5e1;font-size:16px;padding:0 2px;line-height:1" title="Eliminar tarea">×</button>` : ''}
@@ -2442,28 +2490,28 @@ function rDocumentos(e) {
   const wr      = canWrite();
   const eid     = e.id;
 
-  if (loading) return `<div style="text-align:center;padding:30px;color:#94a3b8;font-size:12.5px">⏳ Cargando documentos…</div>`;
+  if (loading) return `<div style="text-align:center;padding:30px;color:#94a3b8;font-size:12.5px">${icon('loader','icon-spin')} Cargando documentos…</div>`;
 
   const docList = Array.isArray(docs)
-    ? (docs.length===0 ? `<div style="text-align:center;padding:20px"><div style="font-size:26px;margin-bottom:8px">📂</div><p style="color:#94a3b8;font-size:12.5px">No hay documentos adjuntos.</p></div>`
+    ? (docs.length===0 ? `<div style="text-align:center;padding:20px"><div style="font-size:26px;margin-bottom:8px;color:#cbd5e1">${icon('folder')}</div><p style="color:#94a3b8;font-size:12.5px">No hay documentos adjuntos.</p></div>`
       : docs.map(doc => {
           const ext  = (doc.name.split('.').pop()||'').toLowerCase();
-          const icon = {pdf:'📄',doc:'📝',docx:'📝',png:'🖼',jpg:'🖼',jpeg:'🖼',xlsx:'📊',xls:'📊'}[ext] || '📎';
+          const docIcon = {pdf:'fileText',doc:'fileText',docx:'fileText',png:'image',jpg:'image',jpeg:'image',xlsx:'barChart',xls:'barChart'}[ext] || 'paperclip';
           const sz   = doc.metadata?.size ? (doc.metadata.size<1e6 ? Math.round(doc.metadata.size/1024)+'KB' : (doc.metadata.size/1048576).toFixed(1)+'MB') : '';
           const dt   = doc.created_at ? new Date(doc.created_at).toLocaleDateString('es-MX',{day:'2-digit',month:'short',year:'numeric'}) : '';
           return `<div class="doc-item">
-            <div class="doc-icon">${icon}</div>
+            <div class="doc-icon">${icon(docIcon)}</div>
             <div class="doc-info">
               <div class="doc-name" title="${esc(doc.name)}">${esc(doc.name)}</div>
               <div class="doc-meta">${sz}${sz&&dt?' · ':''}${dt}</div>
             </div>
             <div style="display:flex;gap:5px">
-              <button class="btn btn-secondary btn-sm" onclick="downloadDoc('${eid}','${esc(doc.name)}')">⬇ Descargar</button>
-              ${wr?`<button class="btn btn-secondary btn-sm" style="color:#dc2626;border-color:#fecaca" onclick="delDoc('${eid}','${esc(doc.name)}')">✕</button>`:''}
+              <button class="btn btn-secondary btn-sm" onclick="downloadDoc('${eid}','${esc(doc.name)}')">${icon('download')} Descargar</button>
+              ${wr?`<button class="btn btn-secondary btn-sm" style="color:#dc2626;border-color:#fecaca" onclick="delDoc('${eid}','${esc(doc.name)}')">${icon('x')}</button>`:''}
             </div>
           </div>`;
         }).join(''))
-    : `<div style="text-align:center;padding:24px"><button class="btn btn-secondary" onclick="loadDocs('${eid}')">📂 Cargar documentos</button></div>`;
+    : `<div style="text-align:center;padding:24px"><button class="btn btn-secondary" onclick="loadDocs('${eid}')">${icon('folder')} Cargar documentos</button></div>`;
 
   return `<div>
     ${wr ? `
@@ -2471,14 +2519,14 @@ function rDocumentos(e) {
       ondragover="event.preventDefault();this.classList.add('drag-over')"
       ondragleave="this.classList.remove('drag-over')"
       ondrop="event.preventDefault();this.classList.remove('drag-over');uploadDoc('${eid}',event.dataTransfer.files[0])">
-      <div style="font-size:22px;margin-bottom:5px">📎</div>
+      <div style="font-size:22px;margin-bottom:5px;color:#94a3b8">${icon('paperclip')}</div>
       <p style="font-size:12.5px;font-weight:700;color:#374151">Arrastra un archivo o haz clic para seleccionar</p>
       <p style="font-size:10.5px;color:#94a3b8;margin-top:3px">PDF, Word, Excel, imágenes · Máx 10 MB</p>
     </div>
     <input type="file" id="fInp_${eid}" style="display:none" accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg" onchange="uploadDoc('${eid}',this.files[0]);this.value=''">` : ''}
     <div>${docList}</div>
     <div style="margin-top:10px;padding:7px 11px;background:#f8fafc;border-radius:8px;font-size:10.5px;color:#94a3b8;line-height:1.5">
-      💡 Requiere bucket <b>docs-juicios</b> en Supabase Storage con políticas de lectura/escritura para usuarios autenticados.
+      ${icon('lightbulb')} Requiere bucket <b>docs-juicios</b> en Supabase Storage con políticas de lectura/escritura para usuarios autenticados.
     </div>
   </div>`;
 }
@@ -2506,7 +2554,7 @@ async function uploadDoc(expId, file) {
     const {error} = await SB.storage.from(DOC_BUCKET).upload(path, file, {upsert:true});
     if (error) throw error;
     await loadDocs(expId);
-    showToast('✓ '+file.name+' subido');
+    showToast(file.name+' subido');
   } catch(err) { showToast('Error al subir: '+err.message, true); }
 }
 
@@ -2527,7 +2575,7 @@ async function delDoc(expId, name) {
     const {error} = await SB.storage.from(DOC_BUCKET).remove([expId+'/'+name]);
     if (error) throw error;
     await loadDocs(expId);
-    showToast('✓ Documento eliminado');
+    showToast('Documento eliminado');
   } catch(err) { showToast('Error: '+err.message, true); }
 }
 
@@ -2539,26 +2587,26 @@ function rTimeline(e) {
   const evs   = [];
   const add   = (date, icon, label, sub, color) => { if (date) evs.push({date, icon, label, sub, color}); };
 
-  add(e.fechaEmisionResolucion,      '📋', 'Emisión de Resolución',         e.resolucionImpugnada||'',     '#f59e0b');
-  add(e.fechaEmplazamiento,          '📬', 'Emplazamiento',                  e.sala||'',                   '#3b82f6');
-  add(e.fechaContestacion,           '⏰', 'Vencimiento Contestación',       e.tipoJuicio||'',              '#ef4444');
-  add(e.fechaOficioContestacion,     '📄', 'Oficio Contestación',            e.oficioContestacion||'',      '#8b5cf6');
-  add(e.fechaOficioAmpliacion,       '📄', 'Oficio Amp. de Demanda',         e.oficioAmpliacion||'',        '#8b5cf6');
-  add(e.fechaOficioAlegatos,         '📄', 'Oficio de Alegatos',             e.oficioAlegatos||'',          '#8b5cf6');
-  add(e.fechaNotificacionSentencia, '📨', 'Notificación de Sentencia',      '',                            '#0ea5e9');
-  add(e.fechaFirmeza,               '🔒', 'Firmeza de la Sentencia',         'Art. 63 LFPCA',               '#0f2044');
-  add(e.fechaVencimientoCumplimiento&&isParaEfectos(e.efectoSentencia)?e.fechaVencimientoCumplimiento:'', '⏳', 'Vencimiento Cumplimiento', 'Art. 58 LFPCA — 4 meses', '#dc2626');
-  add(e.fechaProximaAudiencia,       '🎤', 'Próxima Audiencia',              e.sala||'',                   '#06b6d4');
-  add(e.fechaSentencia,              '⚖',  'Sentencia',                      e.efectoSentencia||'',         '#10b981');
-  add(e.fechaUltimoApercibimiento,   '⚠',  'Último Apercibimiento',          '',                            '#dc2626');
-  add(e.fechaMemo,                   '📊', 'Memo de Informe',                e.numeroMemo||'',              '#0369a1');
-  add(e.fechaEstatus,                '📌', 'Actualización de Estatus',       e.estatus||'',                 '#64748b');
+  add(e.fechaEmisionResolucion,      'fileText', 'Emisión de Resolución',         e.resolucionImpugnada||'',     '#f59e0b');
+  add(e.fechaEmplazamiento,          'mail', 'Emplazamiento',                  e.sala||'',                   '#3b82f6');
+  add(e.fechaContestacion,           'clock', 'Vencimiento Contestación',       e.tipoJuicio||'',              '#ef4444');
+  add(e.fechaOficioContestacion,     'fileText', 'Oficio Contestación',            e.oficioContestacion||'',      '#8b5cf6');
+  add(e.fechaOficioAmpliacion,       'fileText', 'Oficio Amp. de Demanda',         e.oficioAmpliacion||'',        '#8b5cf6');
+  add(e.fechaOficioAlegatos,         'fileText', 'Oficio de Alegatos',             e.oficioAlegatos||'',          '#8b5cf6');
+  add(e.fechaNotificacionSentencia, 'mail', 'Notificación de Sentencia',      '',                            '#0ea5e9');
+  add(e.fechaFirmeza,               'lock', 'Firmeza de la Sentencia',         'Art. 63 LFPCA',               '#0f2044');
+  add(e.fechaVencimientoCumplimiento&&isParaEfectos(e.efectoSentencia)?e.fechaVencimientoCumplimiento:'', 'clock', 'Vencimiento Cumplimiento', 'Art. 58 LFPCA — 4 meses', '#dc2626');
+  add(e.fechaProximaAudiencia,       'mic', 'Próxima Audiencia',              e.sala||'',                   '#06b6d4');
+  add(e.fechaSentencia,              'scale',  'Sentencia',                      e.efectoSentencia||'',         '#10b981');
+  add(e.fechaUltimoApercibimiento,   'alertTriangle',  'Último Apercibimiento',          '',                            '#dc2626');
+  add(e.fechaMemo,                   'barChart', 'Memo de Informe',                e.numeroMemo||'',              '#0369a1');
+  add(e.fechaEstatus,                'pin', 'Actualización de Estatus',       e.estatus||'',                 '#64748b');
 
   (Array.isArray(e.tareas)?e.tareas:[]).filter(t=>t.completada&&t.completadaEn).forEach(t=>{
-    add(t.completadaEn.slice(0,10), '✅', 'Tarea completada: '+t.titulo, '', '#059669');
+    add(t.completadaEn.slice(0,10), 'checkCircle', 'Tarea completada: '+t.titulo, '', '#059669');
   });
 
-  if (!evs.length) return `<div style="text-align:center;padding:30px 0"><div style="font-size:28px;margin-bottom:8px">📊</div><p style="color:#94a3b8;font-size:12.5px">No hay actuaciones con fecha registrada.</p></div>`;
+  if (!evs.length) return `<div style="text-align:center;padding:30px 0"><div style="font-size:28px;margin-bottom:8px;color:#cbd5e1">${icon('barChart')}</div><p style="color:#94a3b8;font-size:12.5px">No hay actuaciones con fecha registrada.</p></div>`;
 
   evs.sort((a,b)=>a.date.localeCompare(b.date));
 
@@ -2574,8 +2622,8 @@ function rTimeline(e) {
           ${i<evs.length-1 ? `<div class="tl-line"></div>` : ''}
         </div>
         <div class="tl-body">
-          <div class="tl-fecha" style="${isToday?'color:#2563eb':isFuture?'color:#94a3b8':''}">${isToday?'🔵 HOY · ':isFuture?'🔜 ':''}${fd(ev.date)}</div>
-          <div class="tl-label">${ev.icon} ${esc(ev.label)}</div>
+          <div class="tl-fecha" style="${isToday?'color:#2563eb':isFuture?'color:#94a3b8':''}">${isToday?dotIc('#2563eb')+' HOY · ':''}${fd(ev.date)}</div>
+          <div class="tl-label" style="display:flex;align-items:center;gap:5px">${icon(ev.icon)} ${esc(ev.label)}</div>
           ${ev.sub ? `<div class="tl-sub">${esc(ev.sub)}</div>` : ''}
         </div>
       </div>`;
