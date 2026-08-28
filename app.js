@@ -11,7 +11,7 @@ const SUPABASE_ANON_KEY = 'sb_publishable_Ne9opVMzKFWXvl3w5p3hCg_BGSQ_AaA';     
 // (1.2.1, 1.2.2 … 1.2.9); al llegar a 9 se reinicia a 0 y sube MENOR
 // (1.2.9 → 1.3.0).
 // ════════════════════════════════════════════════════════════════
-const APP_VERSION = '1.3.1';
+const APP_VERSION = '1.3.2';
 
 // ════════════════════════════════════════════════════════════════
 // CONSTANTES DE LA APP
@@ -1716,9 +1716,17 @@ function rBoletin(){
 }
 
 function render(){
-  rHdr();
-  const v={lista:rLista,form:rForm,detalle:rDetalle,buscar:rBuscar,reportes:rReportes,importar:rImportar,bitacora:rBitacora,calendario:rCalendario,boletin:rBoletin};
-  document.getElementById('main').innerHTML = `<div id="importMain">${renderNotifBanner()}${(v[S.view]||rLista)()}</div>${rDashModal()}`;
+  const paint = () => {
+    rHdr();
+    const v={lista:rLista,form:rForm,detalle:rDetalle,buscar:rBuscar,reportes:rReportes,importar:rImportar,bitacora:rBitacora,calendario:rCalendario,boletin:rBoletin};
+    document.getElementById('main').innerHTML = `<div id="importMain">${renderNotifBanner()}${(v[S.view]||rLista)()}</div>${rDashModal()}`;
+  };
+  const reduceMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+  if (document.startViewTransition && !reduceMotion) {
+    document.startViewTransition(paint);
+  } else {
+    paint();
+  }
 }
 
 // ════════════════════════════════════════════════════════════════
