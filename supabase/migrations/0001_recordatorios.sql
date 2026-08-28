@@ -71,6 +71,12 @@ end;
 $$;
 
 grant execute on function public.set_notification_prefs(boolean, boolean) to authenticated;
+-- Supabase otorga EXECUTE a `anon` por defecto en funciones nuevas del
+-- esquema public (privilegios por defecto), aparte de PUBLIC — hay que
+-- revocarlo explícitamente de ambos o cualquier visitante sin sesión
+-- podría invocar la función (aunque internamente la rechace por
+-- auth.uid() null, mejor no depender sólo de eso).
+revoke execute on function public.set_notification_prefs(boolean, boolean) from public, anon;
 
 -- Genera (o renueva) el código de un solo uso para vincular Telegram.
 -- El usuario lo recibe y lo manda al bot con /start <código>; el
@@ -98,6 +104,7 @@ end;
 $$;
 
 grant execute on function public.generate_telegram_link_code() to authenticated;
+revoke execute on function public.generate_telegram_link_code() from public, anon;
 
 -- Desvincula Telegram (botón "Desvincular" en la app).
 create or replace function public.unlink_telegram()
@@ -120,3 +127,4 @@ end;
 $$;
 
 grant execute on function public.unlink_telegram() to authenticated;
+revoke execute on function public.unlink_telegram() from public, anon;

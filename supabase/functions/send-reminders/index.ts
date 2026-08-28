@@ -188,7 +188,7 @@ Deno.serve(async (req) => {
 
     const { data: profiles, error: profError } = await sb
       .from('profiles')
-      .select('id, nombre, email_reminders, telegram_reminders, telegram_chat_id')
+      .select('id, nombre, email, email_reminders, telegram_reminders, telegram_chat_id')
       .or('email_reminders.eq.true,telegram_reminders.eq.true');
     if (profError) throw profError;
 
@@ -196,11 +196,9 @@ Deno.serve(async (req) => {
     let telegramsEnviados = 0;
 
     for (const p of profiles || []) {
-      if (p.email_reminders) {
-        const { data: userResp } = await sb.auth.admin.getUserById(p.id);
-        const email = userResp?.user?.email;
-        if (email && (await reservarEnvio(`email:${p.id}`))) {
-          await enviarCorreo(email, items);
+      if (p.email_reminders && p.email) {
+        if (await reservarEnvio(`email:${p.id}`)) {
+          await enviarCorreo(p.email, items);
           emailsEnviados++;
         }
       }
