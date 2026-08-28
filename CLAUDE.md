@@ -17,5 +17,10 @@ Esquema `MAYOR.MENOR.CAMBIO`:
 - El número MAYOR se sube manualmente sólo cuando el usuario lo indique
   explícitamente (cambio grande / release mayor).
 
-Cuando se haga cualquier cambio a `index.html`, actualizar `APP_VERSION`
-siguiendo esta regla como parte del mismo commit.
+Cuando se haga cualquier cambio a `index.html`, `app.js` o `styles.css`,
+actualizar `APP_VERSION` siguiendo esta regla como parte del mismo commit.
+
+`index.html` carga `app.js` y `styles.css` con un query string
+`?v=<APP_VERSION>` (cache-busting) — al subir `APP_VERSION` hay que
+actualizar también esos dos `?v=` en `index.html` para que el navegador
+del usuario no siga sirviendo una versión vieja desde caché.

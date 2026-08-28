@@ -15,7 +15,7 @@ const TELEGRAM_BOT_USERNAME = 'Jurisconsultobot';
 // (1.2.1, 1.2.2 … 1.2.9); al llegar a 9 se reinicia a 0 y sube MENOR
 // (1.2.9 → 1.3.0).
 // ════════════════════════════════════════════════════════════════
-const APP_VERSION = '1.3.6';
+const APP_VERSION = '1.3.7';
 
 // ════════════════════════════════════════════════════════════════
 // CONSTANTES DE LA APP
