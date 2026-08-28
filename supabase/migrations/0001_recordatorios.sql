@@ -5,7 +5,7 @@
 -- para no enviar el mismo recordatorio dos veces el mismo día.
 -- ════════════════════════════════════════════════════════════════
 
-create extension if not exists pgcrypto;
+create extension if not exists pgcrypto with schema extensions;
 
 alter table public.profiles
   add column if not exists email_reminders boolean not null default true,
@@ -85,7 +85,10 @@ create or replace function public.generate_telegram_link_code()
 returns text
 language plpgsql
 security definer
-set search_path = public
+-- pgcrypto (gen_random_bytes) vive en el esquema `extensions` en este
+-- proyecto, no en `public` — hay que incluirlo en el search_path o la
+-- función falla con "function gen_random_bytes(integer) does not exist".
+set search_path = public, extensions
 as $$
 declare
   v_code text;
