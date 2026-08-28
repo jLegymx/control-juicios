@@ -7,7 +7,7 @@ const SUPABASE_ANON_KEY = 'sb_publishable_Ne9opVMzKFWXvl3w5p3hCg_BGSQ_AaA';     
 // Usuario del bot de Telegram para "Vincular Telegram" (sin la @).
 // Déjalo vacío ('') si no vas a usar recordatorios por Telegram.
 // Ver supabase/README.md para crear el bot y desplegar las funciones.
-const TELEGRAM_BOT_USERNAME = ''; // ← CAMBIA ESTO (p.ej. 'ControlJuiciosBot')
+const TELEGRAM_BOT_USERNAME = 'Jurisconsultobot';
 
 // ════════════════════════════════════════════════════════════════
 // VERSIÓN DE LA APP
@@ -15,7 +15,7 @@ const TELEGRAM_BOT_USERNAME = ''; // ← CAMBIA ESTO (p.ej. 'ControlJuiciosBot')
 // (1.2.1, 1.2.2 … 1.2.9); al llegar a 9 se reinicia a 0 y sube MENOR
 // (1.2.9 → 1.3.0).
 // ════════════════════════════════════════════════════════════════
-const APP_VERSION = '1.3.5';
+const APP_VERSION = '1.3.6';
 
 // ════════════════════════════════════════════════════════════════
 // CONSTANTES DE LA APP
