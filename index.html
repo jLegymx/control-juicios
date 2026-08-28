@@ -95,8 +95,13 @@ textarea{min-height:70px;resize:vertical}
 .dash-rem{font-family:'Lato',system-ui,sans-serif;font-size:11px;color:#64748b;margin-top:5px;display:flex;align-items:center;gap:7px;letter-spacing:.01em}
 .dash-rem svg{flex-shrink:0;color:#94a3b8}
 .dash-metrics{display:flex;gap:10px;flex-wrap:wrap}
-.metric{font-family:'Lato',system-ui,sans-serif;padding:10px 16px;border-radius:6px;min-width:82px;text-align:center;background:#fff;border:1px solid #e2e8f0;border-left:3px solid #cbd5e1;box-shadow:0 1px 2px rgba(15,23,42,.04);transition:box-shadow .2s,transform .2s}
+.metric{font-family:'Lato',system-ui,sans-serif;padding:10px 16px;border-radius:6px;min-width:82px;text-align:center;background:#fff;border:1px solid #e2e8f0;border-left:3px solid #cbd5e1;box-shadow:0 1px 2px rgba(15,23,42,.04);transition:box-shadow .2s,transform .2s;cursor:pointer}
 .metric:hover{box-shadow:0 3px 8px rgba(15,23,42,.08);transform:translateY(-1px)}
+.dmodal-bg{position:fixed;inset:0;background:rgba(15,32,68,.55);z-index:150;display:flex;align-items:flex-start;justify-content:center;padding:40px 20px;overflow-y:auto}
+.dmodal{font-family:'Lato',system-ui,sans-serif;background:white;border-radius:12px;max-width:940px;width:100%;padding:22px;box-shadow:0 20px 60px rgba(0,0,0,.3)}
+.dmodal-hd{display:flex;align-items:start;justify-content:space-between;margin-bottom:14px;gap:10px}
+.dmodal-close{background:#f1f5f9;border:none;border-radius:8px;width:30px;height:30px;cursor:pointer;font-size:14px;color:#64748b;flex-shrink:0}
+.dmodal-close:hover{background:#e2e8f0}
 .metric-num{font-size:19px;font-weight:900;line-height:1;color:#0f2044}
 .metric-lbl{font-size:8.5px;font-weight:800;text-transform:uppercase;letter-spacing:.07em;margin-top:4px;color:#64748b}
 .m-urg{border-left-color:#dc2626}
@@ -381,7 +386,7 @@ const SUPABASE_ANON_KEY = 'sb_publishable_Ne9opVMzKFWXvl3w5p3hCg_BGSQ_AaA';     
 // (1.2.1, 1.2.2 … 1.2.9); al llegar a 9 se reinicia a 0 y sube MENOR
 // (1.2.9 → 1.3.0).
 // ════════════════════════════════════════════════════════════════
-const APP_VERSION = '1.2.3';
+const APP_VERSION = '1.2.4';
 
 // ════════════════════════════════════════════════════════════════
 // CONSTANTES DE LA APP
@@ -705,7 +710,9 @@ let S = {
   // Documentos cache: expId -> array | null
   docs: {}, docsLoading: false,
   // Boletin TFJA
-  boletinHits: [], boletinLoaded: false, boletinFilter: 'pendientes'
+  boletinHits: [], boletinLoaded: false, boletinFilter: 'pendientes',
+  // Modal de detalle de tarjeta del dashboard
+  dashModal: null
 };
 
 const isAdmin  = () => S.role === 'admin';
@@ -1214,6 +1221,62 @@ function doSearch() {
 function showDet(id){ const prev=S.det?.id; S.det=S.exps.find(e=>e.id===id)||null; if(prev!==id){S.detTab='info';} S.view='detalle'; render(); }
 function goNew(){ if(!canWrite()){showToast('Sin permisos para crear expedientes',true);return;} S.form={...EF}; S.editId=null; S.view='form'; render(); }
 
+// ── Modal de tarjetas del dashboard: revisar los expedientes detrás de cada métrica ──
+function openDashModal(type){ S.dashModal=type; render(); }
+function closeDashModal(){ S.dashModal=null; render(); }
+function dashModalData(type){
+  const today=new Date(); today.setHours(0,0,0,0);
+  const in7=new Date(today); in7.setDate(in7.getDate()+7);
+  const in10=new Date(today); in10.setDate(in10.getDate()+10);
+  const getFL = window._getFechaLimitePlazo || (()=>null);
+  const defs = {
+    urgente:     { title:'Expedientes Urgentes', ref:e=>prBdg(e.prioridad),
+                   filter:e=>e.prioridad==='urgente' },
+    audienciasHoy:{ title:'Audiencias de Hoy', ref:e=>fd(e.fechaProximaAudiencia),
+                   filter:e=>{ if(!e.fechaProximaAudiencia)return false; const d=new Date(e.fechaProximaAudiencia+'T00:00:00'); return d.getTime()===today.getTime(); } },
+    semana:      { title:'Audiencias en los Próximos 7 Días', ref:e=>fd(e.fechaProximaAudiencia),
+                   filter:e=>{ if(!e.fechaProximaAudiencia)return false; const d=new Date(e.fechaProximaAudiencia+'T00:00:00'); return d>=today&&d<=in7; } },
+    plazoVenc:   { title:'Contestaciones Vencidas', ref:e=>fd(getFL(e)),
+                   filter:e=>{ const fl=getFL(e); return fl && new Date(fl+'T00:00:00')<today; } },
+    plazoProx:   { title:'Contestaciones — Próximos 10 Días', ref:e=>fd(getFL(e)),
+                   filter:e=>{ const fl=getFL(e); if(!fl)return false; const d=new Date(fl+'T00:00:00'); return d>=today&&d<=in10; } },
+    plazoProc:   { title:'Contestaciones en Proceso', ref:e=>fd(getFL(e)),
+                   filter:e=>{ const fl=getFL(e); return fl && new Date(fl+'T00:00:00')>in10; } },
+    cumplVenc:   { title:'Cumplimientos Vencidos (Art. 58 LFPCA)', ref:e=>fd(e.fechaVencimientoCumplimiento),
+                   filter:e=>e.fechaVencimientoCumplimiento && isParaEfectos(e.efectoSentencia) && diasParaFecha(e.fechaVencimientoCumplimiento)<0 },
+    cumplProx:   { title:'Cumplimientos Próximos 30 Días (Art. 58 LFPCA)', ref:e=>fd(e.fechaVencimientoCumplimiento),
+                   filter:e=>{ if(!e.fechaVencimientoCumplimiento||!isParaEfectos(e.efectoSentencia))return false; const d=diasParaFecha(e.fechaVencimientoCumplimiento); return d!==null&&d>=0&&d<=30; } },
+    total:       { title:'Todos los Expedientes', ref:e=>bdg(e.estatus,true), filter:()=>true }
+  };
+  const d = defs[type] || defs.total;
+  return { title:d.title, ref:d.ref, list:S.exps.filter(d.filter) };
+}
+function rDashModal(){
+  if(!S.dashModal) return '';
+  const { title, list, ref } = dashModalData(S.dashModal);
+  return `<div class="dmodal-bg" onclick="if(event.target===this)closeDashModal()">
+    <div class="dmodal">
+      <div class="dmodal-hd">
+        <div><div style="font-weight:900;font-size:16px;color:#0f2044">${esc(title)}</div><div style="font-size:11px;color:#64748b;margin-top:2px">${list.length} expediente${list.length!==1?'s':''}</div></div>
+        <button class="dmodal-close" onclick="closeDashModal()">✕</button>
+      </div>
+      ${list.length===0 ? '<p style="text-align:center;color:#94a3b8;padding:36px;font-size:12px">No hay expedientes en esta categoría.</p>' : `
+      <div style="overflow-x:auto"><table class="tbl">
+        <thead><tr><th>N° Juicio</th><th>Demandante</th><th>Sala</th><th>Abogado</th><th>Estatus</th><th>Referencia</th><th>Acciones</th></tr></thead>
+        <tbody>${list.map(e=>`<tr>
+          <td style="font-weight:800;color:#1e3a5f;white-space:nowrap">${esc(e.numeroJuicio)}</td>
+          <td style="max-width:170px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(e.demandante)||'—'}</td>
+          <td style="color:#64748b;white-space:nowrap">${esc(e.sala)||'—'}</td>
+          <td style="color:#64748b;white-space:nowrap">${esc(e.abogadoResponsable)||'—'}</td>
+          <td>${bdg(e.estatus,true)}</td>
+          <td style="white-space:nowrap">${ref(e)}</td>
+          <td><div style="display:flex;gap:6px;font-size:10px;white-space:nowrap"><button class="link-btn" style="color:#2563eb" onclick="closeDashModal();showDet('${e.id}')">Ver</button>${canWrite()?`<span style="color:#e2e8f0">|</span><button class="link-btn" style="color:#d97706" onclick="closeDashModal();doEdit('${e.id}')">Editar</button>`:''}</div></td>
+        </tr>`).join('')}</tbody>
+      </table></div>`}
+    </div>
+  </div>`;
+}
+
 // ════════════════════════════════════════════════════════════════
 // RENDER — HEADER
 // ════════════════════════════════════════════════════════════════
@@ -1361,16 +1424,16 @@ function rLista() {
         <div class="dash-rem"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>Recuerda revisar diariamente esta base de datos para no perder audiencias ni vencimientos</div>
       </div>
       <div class="dash-metrics">
-        <div class="metric m-urg${urgCount===0?' zero':''}"><div class="metric-num">${urgCount}</div><div class="metric-lbl">Urgentes</div></div>
-        <div class="metric m-today${todayHearings===0?' zero':''}"><div class="metric-num">${todayHearings}</div><div class="metric-lbl">Audiencias hoy</div></div>
-        <div class="metric m-week"><div class="metric-num">${weekHearings}</div><div class="metric-lbl">Próx. 7 días</div></div>
-        <div class="metric m-plazo-venc${plazoVenc===0?' zero':''}"><div class="metric-num">${plazoVenc}</div><div class="metric-lbl">Contest. vencidas</div></div>
-        <div class="metric m-plazo-prox${plazoProx===0?' zero':''}"><div class="metric-num">${plazoProx}</div><div class="metric-lbl">Contest. próx. 10d</div></div>
-        <div class="metric m-plazo-proc${plazoProc===0?' zero':''}"><div class="metric-num">${plazoProc}</div><div class="metric-lbl">Contest. en proceso</div></div>
-        <div class="metric" onclick="sv('boletin')" style="cursor:pointer;border-left-color:#4338ca"><div class="metric-num" style="color:#4338ca">${S.boletinHits.filter(h=>esBoletinRelevante(h) && !h.revisado).length}</div><div class="metric-lbl">Boletin pend.</div></div>
-        <div class="metric m-aten${atenCount===0?' zero':''}" style="cursor:pointer" onclick="S.atenOpen=!S.atenOpen;render()" title="Ver expedientes atendidos"><div class="metric-num">${atenCount}</div><div class="metric-lbl">Atendidos</div></div>
-        <div class="metric m-cumpl${cumplVenc>0?' urgent':cumplProx===0?' zero':''}" title="Art. 58 LFPCA — sentencias para efectos"><div class="metric-num">${cumplVenc>0?cumplVenc:cumplProx}</div><div class="metric-lbl">${cumplVenc>0?'Cumpl. VENCIDOS':'Cumpl. próx. 30d'}</div></div>
-        <div class="metric m-total"><div class="metric-num">${S.exps.length}</div><div class="metric-lbl">Total</div></div>
+        <div class="metric m-urg${urgCount===0?' zero':''}" onclick="openDashModal('urgente')" title="Ver expedientes urgentes"><div class="metric-num">${urgCount}</div><div class="metric-lbl">Urgentes</div></div>
+        <div class="metric m-today${todayHearings===0?' zero':''}" onclick="openDashModal('audienciasHoy')" title="Ver audiencias de hoy"><div class="metric-num">${todayHearings}</div><div class="metric-lbl">Audiencias hoy</div></div>
+        <div class="metric m-week" onclick="openDashModal('semana')" title="Ver audiencias de los próximos 7 días"><div class="metric-num">${weekHearings}</div><div class="metric-lbl">Próx. 7 días</div></div>
+        <div class="metric m-plazo-venc${plazoVenc===0?' zero':''}" onclick="openDashModal('plazoVenc')" title="Ver contestaciones vencidas"><div class="metric-num">${plazoVenc}</div><div class="metric-lbl">Contest. vencidas</div></div>
+        <div class="metric m-plazo-prox${plazoProx===0?' zero':''}" onclick="openDashModal('plazoProx')" title="Ver contestaciones con vencimiento en los próximos 10 días"><div class="metric-num">${plazoProx}</div><div class="metric-lbl">Contest. próx. 10d</div></div>
+        <div class="metric m-plazo-proc${plazoProc===0?' zero':''}" onclick="openDashModal('plazoProc')" title="Ver contestaciones en proceso"><div class="metric-num">${plazoProc}</div><div class="metric-lbl">Contest. en proceso</div></div>
+        <div class="metric" onclick="sv('boletin')" style="border-left-color:#4338ca"><div class="metric-num" style="color:#4338ca">${S.boletinHits.filter(h=>esBoletinRelevante(h) && !h.revisado).length}</div><div class="metric-lbl">Boletin pend.</div></div>
+        <div class="metric m-aten${atenCount===0?' zero':''}" onclick="S.atenOpen=!S.atenOpen;render()" title="Ver expedientes atendidos"><div class="metric-num">${atenCount}</div><div class="metric-lbl">Atendidos</div></div>
+        <div class="metric m-cumpl${cumplVenc>0?' urgent':cumplProx===0?' zero':''}" onclick="openDashModal(${cumplVenc>0?"'cumplVenc'":"'cumplProx'"})" title="Art. 58 LFPCA — sentencias para efectos"><div class="metric-num">${cumplVenc>0?cumplVenc:cumplProx}</div><div class="metric-lbl">${cumplVenc>0?'Cumpl. VENCIDOS':'Cumpl. próx. 30d'}</div></div>
+        <div class="metric m-total" onclick="openDashModal('total')" title="Ver todos los expedientes"><div class="metric-num">${S.exps.length}</div><div class="metric-lbl">Total</div></div>
       </div>
     </div>
 
@@ -2030,7 +2093,7 @@ function rBoletin(){
 function render(){
   rHdr();
   const v={lista:rLista,form:rForm,detalle:rDetalle,buscar:rBuscar,reportes:rReportes,importar:rImportar,bitacora:rBitacora,calendario:rCalendario,boletin:rBoletin};
-  document.getElementById('main').innerHTML = `<div id="importMain">${renderNotifBanner()}${(v[S.view]||rLista)()}</div>`;
+  document.getElementById('main').innerHTML = `<div id="importMain">${renderNotifBanner()}${(v[S.view]||rLista)()}</div>${rDashModal()}`;
 }
 
 // ════════════════════════════════════════════════════════════════
