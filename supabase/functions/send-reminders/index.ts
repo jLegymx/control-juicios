@@ -8,6 +8,9 @@
 //   - Vencimientos de cumplimiento de sentencia (≤10 días)
 //   - Tareas de agenda vencidas o próximas (≤2 días)
 //   - Expedientes con prioridad "urgente" (aviso permanente)
+//   - Novedades pendientes del Boletín Jurisdiccional (TFJA) que sean
+//     relevantes (enlazadas a un expediente propio o que mencionen
+//     Baja California), igual que la pestaña Boletín dentro de la app
 // y le manda un solo resumen diario, por cada canal que tenga
 // habilitado, a cada usuario con recordatorios activados. El
 // contenido es el mismo para todos los usuarios (igual que el
@@ -112,6 +115,29 @@ function construirItems(exps: any[]): Item[] {
   return items;
 }
 
+// Misma regla que esBoletinRelevante() en app.js (pestaña Boletín):
+// una fila del boletín se avisa si está enlazada a un expediente propio
+// o si su texto menciona Baja California.
+function boletinEsRelevante(h: any): boolean {
+  if (h.expediente_id) return true;
+  const txt = [h.sala, h.demandado, h.actor, h.sintesis, h.keyword_match].filter(Boolean).join(' ');
+  const n = txt
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '');
+  return n.includes('baja california');
+}
+
+function construirItemsBoletin(hits: any[]): Item[] {
+  return hits
+    .filter((h) => !h.revisado && boletinEsRelevante(h))
+    .map((h) => ({
+      tipo: 'boletin',
+      texto: `Boletín TFJA — ${h.tipo_actuacion || 'actuación'} · exp. ${h.expediente || 's/d'}${h.sala ? ' · ' + h.sala : ''}`,
+      urgente: false,
+    }));
+}
+
 function itemsAHtml(items: Item[]): string {
   const li = (it: Item) =>
     `<li style="margin-bottom:4px;${it.urgente ? 'color:#991b1b;font-weight:700' : ''}">${escapeHtml(it.texto)}</li>`;
@@ -210,7 +236,14 @@ Deno.serve(async (req) => {
       );
     if (expError) throw expError;
 
-    const items = construirItems(exps || []);
+    const { data: boletinHits, error: boletinError } = await sb
+      .from('boletin_hits')
+      .select('expediente_id, sala, demandado, actor, sintesis, keyword_match, tipo_actuacion, expediente, revisado');
+    // La tabla la llena un agente aparte; si aún no existe o falla la
+    // consulta, no debe tumbar el resto de los recordatorios.
+    if (boletinError) console.error('Error leyendo boletin_hits:', boletinError);
+
+    const items = [...construirItems(exps || []), ...construirItemsBoletin(boletinHits || [])];
     if (items.length === 0) {
       return new Response(JSON.stringify({ ok: true, items: 0, mensaje: 'Nada pendiente hoy' }), { status: 200 });
     }
