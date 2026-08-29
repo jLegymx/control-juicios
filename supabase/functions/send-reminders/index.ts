@@ -179,8 +179,8 @@ async function enviarCorreo(to: string, items: Item[]): Promise<boolean> {
   }
 }
 
-async function enviarTelegram(chatId: string, items: Item[]): Promise<boolean> {
-  if (!TELEGRAM_BOT_TOKEN) return false;
+async function enviarTelegram(chatId: string, items: Item[]): Promise<{ ok: boolean; detail: string }> {
+  if (!TELEGRAM_BOT_TOKEN) return { ok: false, detail: `TELEGRAM_BOT_TOKEN vacío (largo=${TELEGRAM_BOT_TOKEN.length})` };
   const texto = `📋 <b>Recordatorios — Control de Juicios</b>\n\n${itemsATextoHtml(items)}`;
   try {
     const res = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
@@ -189,13 +189,12 @@ async function enviarTelegram(chatId: string, items: Item[]): Promise<boolean> {
       body: JSON.stringify({ chat_id: chatId, text: texto, parse_mode: 'HTML' }),
     });
     if (!res.ok) {
-      console.error('Telegram respondió error:', res.status, await res.text().catch(() => ''));
-      return false;
+      const body = await res.text().catch(() => '');
+      return { ok: false, detail: `Telegram HTTP ${res.status}: ${body}` };
     }
-    return true;
+    return { ok: true, detail: 'ok' };
   } catch (err) {
-    console.error('Error enviando Telegram:', err);
-    return false;
+    return { ok: false, detail: `Excepción: ${String(err)}` };
   }
 }
 
@@ -224,6 +223,7 @@ Deno.serve(async (req) => {
 
     let emailsEnviados = 0;
     let telegramsEnviados = 0;
+    const debug: string[] = [];
 
     for (const p of profiles || []) {
       if (p.email_reminders && p.email) {
@@ -233,9 +233,14 @@ Deno.serve(async (req) => {
           .eq('item_key', `email:${p.id}`)
           .eq('send_date', new Date().toISOString().slice(0, 10))
           .maybeSingle();
-        if (!yaEnviado && (await enviarCorreo(p.email, items))) {
-          await reservarEnvio(`email:${p.id}`);
-          emailsEnviados++;
+        if (!yaEnviado) {
+          const ok = await enviarCorreo(p.email, items);
+          if (ok) {
+            await reservarEnvio(`email:${p.id}`);
+            emailsEnviados++;
+          } else {
+            debug.push(`email a ${p.nombre || p.id}: falló (RESEND_API_KEY vacío o Resend rechazó)`);
+          }
         }
       }
       if (p.telegram_reminders && p.telegram_chat_id) {
@@ -245,15 +250,20 @@ Deno.serve(async (req) => {
           .eq('item_key', `telegram:${p.id}`)
           .eq('send_date', new Date().toISOString().slice(0, 10))
           .maybeSingle();
-        if (!yaEnviado && (await enviarTelegram(p.telegram_chat_id, items))) {
-          await reservarEnvio(`telegram:${p.id}`);
-          telegramsEnviados++;
+        if (!yaEnviado) {
+          const r = await enviarTelegram(p.telegram_chat_id, items);
+          if (r.ok) {
+            await reservarEnvio(`telegram:${p.id}`);
+            telegramsEnviados++;
+          } else {
+            debug.push(`telegram a ${p.nombre || p.id}: ${r.detail}`);
+          }
         }
       }
     }
 
     return new Response(
-      JSON.stringify({ ok: true, items: items.length, emailsEnviados, telegramsEnviados }),
+      JSON.stringify({ ok: true, items: items.length, emailsEnviados, telegramsEnviados, debug }),
       { status: 200, headers: { 'Content-Type': 'application/json' } }
     );
   } catch (err) {
