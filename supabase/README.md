@@ -69,7 +69,10 @@ ese canal, sin error.
      -d "url=https://maqokevnoorpajxjtswg.supabase.co/functions/v1/telegram-webhook" \
      -d "secret_token=<TELEGRAM_WEBHOOK_SECRET>"
    ```
-5. En `app.js`, junto a `SUPABASE_URL`, reemplaza:
+5. Ya vinculado, en cualquier momento puedes escribirle `/hoy` (o
+   `/resumen`) al bot para recibir el resumen actual al instante, sin
+   esperar al cron de las 08:00.
+6. En `app.js`, junto a `SUPABASE_URL`, reemplaza:
    ```js
    const TELEGRAM_BOT_USERNAME = ''; // ← pon aquí el usuario del bot (sin la @)
    ```
