@@ -118,8 +118,14 @@ function itemsAHtml(items: Item[]): string {
   return `<ul style="padding-left:18px;margin:8px 0">${items.map(li).join('')}</ul>`;
 }
 
-function itemsATexto(items: Item[]): string {
-  return items.map((it) => `${it.urgente ? '⚠ ' : '• '}${it.texto}`).join('\n');
+// Texto plano con HTML escapado — Telegram con parse_mode HTML sólo
+// reconoce <b>/<i>/etc como entidades; el resto se muestra literal, así
+// que a diferencia de Markdown, un nombre o folio con "_", "*" o "["
+// nunca rompe el mensaje completo.
+function itemsATextoHtml(items: Item[]): string {
+  return items
+    .map((it) => (it.urgente ? `⚠️ <b>${escapeHtml(it.texto)}</b>` : `• ${escapeHtml(it.texto)}`))
+    .join('\n');
 }
 
 function escapeHtml(s: string): string {
@@ -130,43 +136,67 @@ function escapeHtml(s: string): string {
 }
 
 // ── Reserva en reminder_log: true si "gano" el envío de hoy ────────
+// Se llama DESPUÉS de confirmar que el envío tuvo éxito (no antes), para
+// que un fallo de Resend/Telegram pueda reintentarse en una corrida
+// posterior el mismo día en vez de darse por "ya enviado" sin haberlo
+// mandado de verdad.
 async function reservarEnvio(itemKey: string): Promise<boolean> {
   const { error } = await sb.from('reminder_log').insert({ item_key: itemKey });
   // Violación de la restricción unique (item_key, send_date) = ya enviado hoy
   return !error;
 }
 
-async function enviarCorreo(to: string, items: Item[]) {
-  if (!RESEND_API_KEY) return;
+async function enviarCorreo(to: string, items: Item[]): Promise<boolean> {
+  if (!RESEND_API_KEY) return false;
   const html = `
     <div style="font-family:sans-serif;max-width:560px">
       <h2 style="color:#0f2044">Recordatorios — Sistema de Control de Juicios</h2>
       <p style="color:#64748b;font-size:13px">${items.length} pendiente${items.length !== 1 ? 's' : ''} que requieren tu atención:</p>
       ${itemsAHtml(items)}
     </div>`;
-  await fetch('https://api.resend.com/emails', {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${RESEND_API_KEY}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      from: RESEND_FROM,
-      to: [to],
-      subject: `${items.length} recordatorio${items.length !== 1 ? 's' : ''} — Control de Juicios`,
-      html,
-    }),
-  }).catch((err) => console.error('Error enviando correo:', err));
+  try {
+    const res = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${RESEND_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        from: RESEND_FROM,
+        to: [to],
+        subject: `${items.length} recordatorio${items.length !== 1 ? 's' : ''} — Control de Juicios`,
+        html,
+      }),
+    });
+    if (!res.ok) {
+      console.error('Resend respondió error:', res.status, await res.text().catch(() => ''));
+      return false;
+    }
+    return true;
+  } catch (err) {
+    console.error('Error enviando correo:', err);
+    return false;
+  }
 }
 
-async function enviarTelegram(chatId: string, items: Item[]) {
-  if (!TELEGRAM_BOT_TOKEN) return;
-  const texto = `📋 *Recordatorios — Control de Juicios*\n\n${itemsATexto(items)}`;
-  await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ chat_id: chatId, text: texto, parse_mode: 'Markdown' }),
-  }).catch((err) => console.error('Error enviando Telegram:', err));
+async function enviarTelegram(chatId: string, items: Item[]): Promise<boolean> {
+  if (!TELEGRAM_BOT_TOKEN) return false;
+  const texto = `📋 <b>Recordatorios — Control de Juicios</b>\n\n${itemsATextoHtml(items)}`;
+  try {
+    const res = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ chat_id: chatId, text: texto, parse_mode: 'HTML' }),
+    });
+    if (!res.ok) {
+      console.error('Telegram respondió error:', res.status, await res.text().catch(() => ''));
+      return false;
+    }
+    return true;
+  } catch (err) {
+    console.error('Error enviando Telegram:', err);
+    return false;
+  }
 }
 
 Deno.serve(async (req) => {
@@ -197,14 +227,26 @@ Deno.serve(async (req) => {
 
     for (const p of profiles || []) {
       if (p.email_reminders && p.email) {
-        if (await reservarEnvio(`email:${p.id}`)) {
-          await enviarCorreo(p.email, items);
+        const { data: yaEnviado } = await sb
+          .from('reminder_log')
+          .select('id')
+          .eq('item_key', `email:${p.id}`)
+          .eq('send_date', new Date().toISOString().slice(0, 10))
+          .maybeSingle();
+        if (!yaEnviado && (await enviarCorreo(p.email, items))) {
+          await reservarEnvio(`email:${p.id}`);
           emailsEnviados++;
         }
       }
       if (p.telegram_reminders && p.telegram_chat_id) {
-        if (await reservarEnvio(`telegram:${p.id}`)) {
-          await enviarTelegram(p.telegram_chat_id, items);
+        const { data: yaEnviado } = await sb
+          .from('reminder_log')
+          .select('id')
+          .eq('item_key', `telegram:${p.id}`)
+          .eq('send_date', new Date().toISOString().slice(0, 10))
+          .maybeSingle();
+        if (!yaEnviado && (await enviarTelegram(p.telegram_chat_id, items))) {
+          await reservarEnvio(`telegram:${p.id}`);
           telegramsEnviados++;
         }
       }
