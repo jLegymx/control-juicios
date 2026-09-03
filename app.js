@@ -15,7 +15,7 @@ const TELEGRAM_BOT_USERNAME = 'Jurisconsultobot';
 // (1.2.1, 1.2.2 … 1.2.9); al llegar a 9 se reinicia a 0 y sube MENOR
 // (1.2.9 → 1.3.0).
 // ════════════════════════════════════════════════════════════════
-const APP_VERSION = '1.4.1';
+const APP_VERSION = '1.4.2';
 
 // ════════════════════════════════════════════════════════════════
 // CONSTANTES DE LA APP
@@ -893,6 +893,12 @@ function showToast(m, err, warn) {
 
 // Campos que requieren re-render inmediato (afectan la estructura del formulario)
 const SF_IMMEDIATE = new Set(['tipoJuicio','viaProcesal','suspension','fechaEmplazamiento','efectoSentencia','fechaSentencia','fechaNotificacionSentencia','fechaFirmeza','prioridad','estatus']);
+// Únicos campos de texto libre cuyo valor en vivo se usa en otra parte del
+// formulario mientras se escribe (las fechas candidatas de emplazamiento se
+// buscan en resumenActuaciones/notas) — todos los demás sólo se guardan en
+// S.form y no necesitan volver a dibujar el formulario en cada pausa al
+// teclear, que es lo que le quitaba el foco y el cursor al campo.
+const SF_LIVE_RENDER = new Set(['resumenActuaciones','notas']);
 let _sfTimer = null;
 
 function sf(k, v) {
@@ -903,7 +909,8 @@ function sf(k, v) {
   }
   if (k === 'suspension') { render(); return; }
   if (SF_IMMEDIATE.has(k)) { render(); return; }
-  // Campos de texto libre: debounce 600ms para no re-renderizar en cada tecla
+  if (!SF_LIVE_RENDER.has(k)) return;
+  // resumenActuaciones/notas: debounce 600ms para no re-renderizar en cada tecla
   clearTimeout(_sfTimer);
   _sfTimer = setTimeout(() => { render(); }, 600);
 }
@@ -1533,9 +1540,9 @@ function rForm() {
         ${fld('Fecha del Oficio de Alegatos',di('fechaOficioAlegatos'))}
       </div>
       ${secT('Resumen Procesal')}
-      <textarea oninput="sf('resumenActuaciones',this.value)" placeholder="Resumen de actuaciones y estado procesal: emplazamiento, contestación, pruebas, alegatos, sentencia, recursos, cumplimiento…" style="min-height:110px">${esc(S.form.resumenActuaciones)}</textarea>
+      <textarea oninput="S.form.resumenActuaciones=this.value" onchange="sf('resumenActuaciones',this.value)" placeholder="Resumen de actuaciones y estado procesal: emplazamiento, contestación, pruebas, alegatos, sentencia, recursos, cumplimiento…" style="min-height:110px">${esc(S.form.resumenActuaciones)}</textarea>
       ${secT('Notas y Observaciones')}
-      <textarea oninput="sf('notas',this.value)" placeholder="Observaciones relevantes…">${esc(S.form.notas)}</textarea>
+      <textarea oninput="S.form.notas=this.value" onchange="sf('notas',this.value)" placeholder="Observaciones relevantes…">${esc(S.form.notas)}</textarea>
       <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:18px;padding-top:14px;border-top:1px solid #f1f5f9">
         <button class="btn btn-secondary" onclick="S.form={...EF};S.editId=null;sv('lista')">Cancelar</button>
         <button class="btn btn-primary" onclick="doSave()">${S.editId ? 'Guardar Cambios' : 'Registrar Expediente'}</button>
