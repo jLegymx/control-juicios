@@ -49,10 +49,44 @@ function fmtDias(d: number): string {
 
 type Item = { tipo: string; texto: string; urgente: boolean };
 
+// Valores de `estatus` que indican que el juicio ya terminó (sentencia
+// cumplimentada, firme sin pendiente, sobreseído o desistido). No se basa en
+// buscar palabras como "archivo" o "concluido" en el resumen de actuaciones
+// porque ese texto narra trámites de rutina (p.ej. "se devuelve el
+// expediente al archivo") incluso en juicios que siguen en trámite — usar
+// esa búsqueda apagaría avisos de casos todavía activos. `estatus` es un
+// campo de texto libre capturado a mano, así que esta lista sólo cubre las
+// variantes/errores de captura ya vistos en los datos reales; un valor
+// nuevo o distinto seguirá generando recordatorios (preferible a silenciar
+// un caso que sigue activo).
+const ESTATUS_CONCLUIDO = new Set([
+  'cumplimentada',
+  'cumplimentda',
+  'cumplimentado',
+  'firme',
+  'sentencia firme',
+  'validez firme',
+  'sobresee el juicio',
+  'sobreseido',
+  'desistimiento de la instancia',
+  'desistido',
+  'se reconoce la validez',
+]);
+// Quita acentos y normaliza mayúsculas para que "Sobreseído" y "SOBRESEIDO"
+// (o cualquier variante de tildes) hagan match contra la misma entrada de
+// ESTATUS_CONCLUIDO sin tener que listar cada combinación de acentos.
+function normalizar(s: string): string {
+  return s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim().toLowerCase();
+}
+function esConcluido(estatus: string | null | undefined): boolean {
+  return ESTATUS_CONCLUIDO.has(normalizar(String(estatus ?? '')));
+}
+
 function construirItems(exps: any[]): Item[] {
   const items: Item[] = [];
 
   for (const e of exps) {
+    if (esConcluido(e.estatus)) continue;
     const numero = e.numero_juicio || '(sin número)';
 
     // Si ya se presentó la contestación (hay oficio de respuesta registrado),
@@ -231,7 +265,7 @@ Deno.serve(async (req) => {
     const { data: exps, error: expError } = await sb
       .from('expedientes')
       .select(
-        'id, numero_juicio, demandante, sala, prioridad, fecha_contestacion, oficio_contestacion, fecha_proxima_audiencia, fecha_vencimiento_cumplimiento, tareas'
+        'id, numero_juicio, demandante, sala, estatus, prioridad, fecha_contestacion, oficio_contestacion, fecha_proxima_audiencia, fecha_vencimiento_cumplimiento, tareas'
       );
     if (expError) throw expError;
 

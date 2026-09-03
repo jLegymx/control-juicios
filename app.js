@@ -15,12 +15,28 @@ const TELEGRAM_BOT_USERNAME = 'Jurisconsultobot';
 // (1.2.1, 1.2.2 … 1.2.9); al llegar a 9 se reinicia a 0 y sube MENOR
 // (1.2.9 → 1.3.0).
 // ════════════════════════════════════════════════════════════════
-const APP_VERSION = '1.4.0';
+const APP_VERSION = '1.4.1';
 
 // ════════════════════════════════════════════════════════════════
 // CONSTANTES DE LA APP
 // ════════════════════════════════════════════════════════════════
 const ESTATUS=['En trámite','Sentencia favorable','Sentencia desfavorable','Sobreseído','Desistido','En cumplimiento','Cumplimentado','En revisión'];
+// Valores de `estatus` que indican que el juicio ya terminó — misma lista
+// curada que usa supabase/functions/send-reminders/index.ts (mantener
+// sincronizadas). No se basa en buscar "archivo"/"concluido" en el resumen
+// de actuaciones porque ese texto narra trámites de rutina incluso en
+// juicios que siguen activos.
+const ESTATUS_CONCLUIDO = new Set([
+  'cumplimentada','cumplimentda','cumplimentado','firme','sentencia firme',
+  'validez firme','sobresee el juicio','sobreseido','desistimiento de la instancia',
+  'desistido','se reconoce la validez'
+]);
+function normalizarEstatus(s) {
+  return String(s ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim().toLowerCase();
+}
+function esConcluido(estatus) {
+  return ESTATUS_CONCLUIDO.has(normalizarEstatus(estatus));
+}
 const EFECTO_SENTENCIA=['','Validez','Emitir resolución con efectos','Desecha','Sobresee'];
 const TRAMITE=['Juicio de Amparo','Juicio Contencioso Administrativo','Recurso de Revisión','Recurso de Inconformidad','Otro'];
 const SUSP=['Sí','No','En trámite'];
@@ -1080,9 +1096,9 @@ function dashModalData(type){
     plazoProc:   { title:'Contestaciones en Proceso', ref:e=>fd(getFL(e)),
                    filter:e=>{ const fl=getFL(e); return fl && new Date(fl+'T00:00:00')>in10; } },
     cumplVenc:   { title:'Cumplimientos Vencidos (Art. 58 LFPCA)', ref:e=>fd(e.fechaVencimientoCumplimiento),
-                   filter:e=>e.fechaVencimientoCumplimiento && isParaEfectos(e.efectoSentencia) && diasParaFecha(e.fechaVencimientoCumplimiento)<0 },
+                   filter:e=>!esConcluido(e.estatus) && e.fechaVencimientoCumplimiento && isParaEfectos(e.efectoSentencia) && diasParaFecha(e.fechaVencimientoCumplimiento)<0 },
     cumplProx:   { title:'Cumplimientos Próximos 30 Días (Art. 58 LFPCA)', ref:e=>fd(e.fechaVencimientoCumplimiento),
-                   filter:e=>{ if(!e.fechaVencimientoCumplimiento||!isParaEfectos(e.efectoSentencia))return false; const d=diasParaFecha(e.fechaVencimientoCumplimiento); return d!==null&&d>=0&&d<=30; } },
+                   filter:e=>{ if(esConcluido(e.estatus)||!e.fechaVencimientoCumplimiento||!isParaEfectos(e.efectoSentencia))return false; const d=diasParaFecha(e.fechaVencimientoCumplimiento); return d!==null&&d>=0&&d<=30; } },
     total:       { title:'Todos los Expedientes', ref:e=>bdg(e.estatus,true), filter:()=>true }
   };
   const d = defs[type] || defs.total;
@@ -1205,14 +1221,16 @@ function rLista() {
   const atendidos  = S.exps.filter(isAtendido);
   const atenCount  = atendidos.length;
 
-  // Cumplimientos próximos (para efectos, Art. 58 LFPCA)
+  // Cumplimientos próximos (para efectos, Art. 58 LFPCA) — se excluyen los
+  // expedientes ya concluidos (cumplimentados, firmes, sobreseídos...) para
+  // que no sigan contando como "vencidos" para siempre.
   const cumplProx = S.exps.filter(e => {
-    if (!e.fechaVencimientoCumplimiento || !isParaEfectos(e.efectoSentencia)) return false;
+    if (esConcluido(e.estatus) || !e.fechaVencimientoCumplimiento || !isParaEfectos(e.efectoSentencia)) return false;
     const dias = diasParaFecha(e.fechaVencimientoCumplimiento);
     return dias !== null && dias >= 0 && dias <= 30;
   }).length;
   const cumplVenc = S.exps.filter(e => {
-    if (!e.fechaVencimientoCumplimiento || !isParaEfectos(e.efectoSentencia)) return false;
+    if (esConcluido(e.estatus) || !e.fechaVencimientoCumplimiento || !isParaEfectos(e.efectoSentencia)) return false;
     return diasParaFecha(e.fechaVencimientoCumplimiento) < 0;
   }).length;
   // Plazos de contestación: calcula la fecha límite de cada expediente activo
