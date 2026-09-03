@@ -55,7 +55,10 @@ function construirItems(exps: any[]): Item[] {
   for (const e of exps) {
     const numero = e.numero_juicio || '(sin número)';
 
-    if (e.fecha_contestacion) {
+    // Si ya se presentó la contestación (hay oficio de respuesta registrado),
+    // ya no es un pendiente aunque la fecha límite siga guardada en el
+    // expediente — de lo contrario el aviso nunca deja de salir.
+    if (e.fecha_contestacion && !e.oficio_contestacion) {
       const d = diasDesdeHoy(e.fecha_contestacion);
       if (d <= WINDOW_CONTESTACION) {
         items.push({
@@ -118,16 +121,6 @@ function itemsAHtml(items: Item[]): string {
   return `<ul style="padding-left:18px;margin:8px 0">${items.map(li).join('')}</ul>`;
 }
 
-// Texto plano con HTML escapado — Telegram con parse_mode HTML sólo
-// reconoce <b>/<i>/etc como entidades; el resto se muestra literal, así
-// que a diferencia de Markdown, un nombre o folio con "_", "*" o "["
-// nunca rompe el mensaje completo.
-function itemsATextoHtml(items: Item[]): string {
-  return items
-    .map((it) => (it.urgente ? `⚠️ <b>${escapeHtml(it.texto)}</b>` : `• ${escapeHtml(it.texto)}`))
-    .join('\n');
-}
-
 function escapeHtml(s: string): string {
   return String(s ?? '')
     .replace(/&/g, '&amp;')
@@ -179,9 +172,27 @@ async function enviarCorreo(to: string, items: Item[]): Promise<boolean> {
   }
 }
 
-async function enviarTelegram(chatId: string, items: Item[]): Promise<{ ok: boolean; detail: string }> {
-  if (!TELEGRAM_BOT_TOKEN) return { ok: false, detail: `TELEGRAM_BOT_TOKEN vacío (largo=${TELEGRAM_BOT_TOKEN.length})` };
-  const texto = `📋 <b>Recordatorios — Control de Juicios</b>\n\n${itemsATextoHtml(items)}`;
+// Telegram rechaza mensajes de más de 4096 caracteres ("message is too
+// long") — con muchos expedientes pendientes un solo mensaje lo rebasa
+// fácilmente, así que se reparte en varios mensajes por debajo del límite.
+const TELEGRAM_MAX_CHARS = 3500;
+function agruparLineasEnMensajes(lineas: string[], maxChars: number): string[] {
+  const mensajes: string[] = [];
+  let actual = '';
+  for (const linea of lineas) {
+    const candidato = actual ? actual + '\n' + linea : linea;
+    if (candidato.length > maxChars && actual) {
+      mensajes.push(actual);
+      actual = linea;
+    } else {
+      actual = candidato;
+    }
+  }
+  if (actual) mensajes.push(actual);
+  return mensajes;
+}
+
+async function enviarMensajeTelegram(chatId: string, texto: string): Promise<{ ok: boolean; detail: string }> {
   try {
     const res = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
       method: 'POST',
@@ -198,6 +209,20 @@ async function enviarTelegram(chatId: string, items: Item[]): Promise<{ ok: bool
   }
 }
 
+async function enviarTelegram(chatId: string, items: Item[]): Promise<{ ok: boolean; detail: string }> {
+  if (!TELEGRAM_BOT_TOKEN) return { ok: false, detail: `TELEGRAM_BOT_TOKEN vacío (largo=${TELEGRAM_BOT_TOKEN.length})` };
+  const lineas = items.map((it) => (it.urgente ? `⚠️ <b>${escapeHtml(it.texto)}</b>` : `• ${escapeHtml(it.texto)}`));
+  const partes = agruparLineasEnMensajes(lineas, TELEGRAM_MAX_CHARS);
+  for (let i = 0; i < partes.length; i++) {
+    const encabezado = partes.length > 1
+      ? `📋 <b>Recordatorios — Control de Juicios (${i + 1}/${partes.length})</b>\n\n`
+      : `📋 <b>Recordatorios — Control de Juicios</b>\n\n`;
+    const r = await enviarMensajeTelegram(chatId, encabezado + partes[i]);
+    if (!r.ok) return r;
+  }
+  return { ok: true, detail: 'ok' };
+}
+
 Deno.serve(async (req) => {
   if (CRON_SECRET && req.headers.get('x-cron-secret') !== CRON_SECRET) {
     return new Response('forbidden', { status: 403 });
@@ -206,7 +231,7 @@ Deno.serve(async (req) => {
     const { data: exps, error: expError } = await sb
       .from('expedientes')
       .select(
-        'id, numero_juicio, demandante, sala, prioridad, fecha_contestacion, fecha_proxima_audiencia, fecha_vencimiento_cumplimiento, tareas'
+        'id, numero_juicio, demandante, sala, prioridad, fecha_contestacion, oficio_contestacion, fecha_proxima_audiencia, fecha_vencimiento_cumplimiento, tareas'
       );
     if (expError) throw expError;
 
