@@ -15,7 +15,7 @@ const TELEGRAM_BOT_USERNAME = 'Jurisconsultobot';
 // (1.2.1, 1.2.2 … 1.2.9); al llegar a 9 se reinicia a 0 y sube MENOR
 // (1.2.9 → 1.3.0).
 // ════════════════════════════════════════════════════════════════
-const APP_VERSION = '1.3.8';
+const APP_VERSION = '1.3.9';
 
 // ════════════════════════════════════════════════════════════════
 // CONSTANTES DE LA APP
@@ -198,6 +198,39 @@ function parseISODate(s) {
   const d = new Date(+m[1], +m[2]-1, +m[3]);
   return isNaN(d.getTime()) ? null : d;
 }
+// Busca fechas mencionadas cerca de una palabra clave (p.ej. "emplaz") dentro
+// de un texto libre (resumen de actuaciones / notas), para sugerir — nunca
+// para rellenar solas: casi siempre la fecha que sigue a "EMPLAZAMIENTO" en
+// el resumen es la de un oficio/memo posterior, no la del emplazamiento en
+// sí, así que la decisión final la toma quien captura viendo el contexto.
+const MESES_ES = {enero:1,febrero:2,marzo:3,abril:4,mayo:5,junio:6,julio:7,agosto:8,septiembre:9,setiembre:9,octubre:10,noviembre:11,diciembre:12};
+function extraerFechasCandidatas(texto, palabraClave, ventanaChars) {
+  if (!texto) return [];
+  const out = [], seen = new Set();
+  const addISO = (y,mo,d) => {
+    y = String(y); if (y.length===2) y = '20'+y;
+    mo = +mo; d = +d;
+    if (mo<1||mo>12||d<1||d>31) return;
+    const iso = `${y}-${String(mo).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    if (!seen.has(iso)) { seen.add(iso); out.push(iso); }
+  };
+  const reClave = new RegExp(palabraClave, 'gi');
+  let m;
+  while ((m = reClave.exec(texto))) {
+    const ventana = texto.slice(m.index, m.index + (ventanaChars||260));
+    const reNum = /(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})/g;
+    let n;
+    while ((n = reNum.exec(ventana))) addISO(n[3], n[2], n[1]);
+    const reTxt = /(\d{1,2})\s+de\s+([a-záéíóúñ]+)\s+de\s+(\d{2,4})/gi;
+    let t;
+    while ((t = reTxt.exec(ventana))) {
+      const mes = MESES_ES[t[2].toLowerCase()];
+      if (mes) addISO(t[3], mes, t[1]);
+    }
+  }
+  return out.slice(0, 6);
+}
+
 function formatISODate(d) {
   const y = d.getFullYear();
   const mm = String(d.getMonth()+1).padStart(2,'0');
@@ -809,6 +842,20 @@ const lbl  = (t,req) => `<label class="lbl">${t}${req?'<span style="color:red;ma
 const fld  = (l,h,req,span) => `<div${span?' class="span2"':''}>${lbl(l,req)}${h}</div>`;
 const inp  = (k,pl) => `<input value="${esc(S.form[k]||'')}" placeholder="${pl||''}" oninput="sf('${k}',this.value)">`;
 const di   = k => `<input type="date" value="${esc(S.form[k]||'')}" onchange="sf('${k}',this.value)">`;
+// Chips de fechas candidatas (detectadas en el resumen/notas) para campos de
+// fecha que aún están vacíos — un clic las llena, pero no se autocompletan
+// solas porque el texto libre suele mencionar fechas de trámites posteriores
+// junto a la palabra clave, no la fecha exacta que se busca.
+function sugerenciaFechaHTML(campo, palabraClave) {
+  if (S.form[campo]) return '';
+  const candidatos = extraerFechasCandidatas((S.form.resumenActuaciones||'')+' '+(S.form.notas||''), palabraClave);
+  if (!candidatos.length) return '';
+  return `<div style="margin-top:6px;font-size:10.5px;color:#64748b">Fechas detectadas en el resumen/notas — revisa el contexto antes de elegir:
+    <div style="display:flex;gap:5px;flex-wrap:wrap;margin-top:4px">
+      ${candidatos.map(c=>`<button type="button" class="btn btn-secondary btn-sm" onclick="sf('${campo}','${c}')">${c.split('-').reverse().join('/')}</button>`).join('')}
+    </div>
+  </div>`;
+}
 const sl   = (k,arr,ph) => `<select onchange="sf('${k}',this.value)">${ph?'<option value="">Seleccionar…</option>':''}${arr.map(o=>`<option value="${esc(o)}"${S.form[k]===o?' selected':''}>${esc(o)}</option>`).join('')}</select>`;
 
 let _toastTimer = null;
@@ -1422,7 +1469,7 @@ function rForm() {
       </div>
       ${secT('Fechas y Audiencias')}
       <div class="grid2">
-        ${fld('Fecha de Emplazamiento',di('fechaEmplazamiento'))}
+        ${fld('Fecha de Emplazamiento',di('fechaEmplazamiento')+sugerenciaFechaHTML('fechaEmplazamiento','emplaz'))}
         ${fld('Fecha para dar Contestación',di('fechaContestacion')+plazoInfoHTML(S.form.fechaEmplazamiento,S.form.tipoJuicio,S.form.viaProcesal))}
         ${fld('Fecha de Próxima Audiencia',di('fechaProximaAudiencia'))}
         ${fld('Fecha de Sentencia',`<input type="date" value="${S.form.fechaSentencia||''}" onchange="sf('fechaSentencia',this.value);recalcFirmeza()">`)}
@@ -2577,6 +2624,9 @@ const TAREA_TIPOS = [
   {v:'ampliacion',  l:'Amp. Demanda', c:'#92400e',bg:'#fef3c7'},
   {v:'pruebas',     l:'Pruebas',      c:'#065f46',bg:'#d1fae5'},
   {v:'alegatos',    l:'Alegatos',     c:'#5b21b6',bg:'#ede9fe'},
+  {v:'vista',       l:'Vista',        c:'#a16207',bg:'#fef9c3'},
+  {v:'informe',     l:'Informe',      c:'#0e7490',bg:'#cffafe'},
+  {v:'requerimiento',l:'Requerimiento',c:'#b91c1c',bg:'#fee2e2'},
   {v:'recurso',     l:'Recurso',      c:'#9a3412',bg:'#ffedd5'},
   {v:'cumplimiento',l:'Cumplimiento', c:'#0369a1',bg:'#e0f2fe'},
   {v:'general',     l:'General',      c:'#475569',bg:'#f1f5f9'}
@@ -2586,6 +2636,9 @@ const TMPL = [
   ['Preparar contestación','contestacion'],
   ['Recopilar pruebas','pruebas'],
   ['Redactar alegatos','alegatos'],
+  ['Desahogar vista','vista'],
+  ['Rendir informe','informe'],
+  ['Atender requerimiento','requerimiento'],
   ['Presentar ampliación','ampliacion'],
   ['Interponer recurso','recurso'],
   ['Dar cumplimiento','cumplimiento']
