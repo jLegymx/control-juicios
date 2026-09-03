@@ -15,7 +15,7 @@ const TELEGRAM_BOT_USERNAME = 'Jurisconsultobot';
 // (1.2.1, 1.2.2 … 1.2.9); al llegar a 9 se reinicia a 0 y sube MENOR
 // (1.2.9 → 1.3.0).
 // ════════════════════════════════════════════════════════════════
-const APP_VERSION = '1.3.9';
+const APP_VERSION = '1.4.0';
 
 // ════════════════════════════════════════════════════════════════
 // CONSTANTES DE LA APP
@@ -298,8 +298,14 @@ function calcularPlazoContestacion(fechaEmplazamiento, tipoJuicio, viaProcesal) 
     if (via === 'Sumario') {
       diasSurteEfectos = 1;
       diasPlazo        = 15;
-      basesLegales     = 'LFPCA Arts. 19, 58-2 fr.II, 70 y 74';
+      basesLegales     = 'LFPCA Arts. 19, 58-4, 70 y 74';
     } else if (via === 'En Línea') {
+      // Reforma DOF 09-06-2026: el Art. 65 baja el "surte efectos" del Boletín
+      // Jurisdiccional de 3 a 2 días hábiles, PERO el Transitorio Tercero de
+      // ese decreto pospone la entrada en vigor de ese cambio a los 240 días
+      // naturales siguientes a su publicación (~4 de febrero de 2027). Hasta
+      // esa fecha sigue vigente la regla de 3 días — no bajar este número
+      // antes de esa fecha. Revisar y cambiar diasSurteEfectos a 2 entonces.
       diasSurteEfectos = 3;
       diasPlazo        = 30;
       basesLegales     = 'LFPCA Arts. 19, 58-N, 65 y 74';
