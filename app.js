@@ -15,7 +15,7 @@ const TELEGRAM_BOT_USERNAME = 'Jurisconsultobot';
 // (1.2.1, 1.2.2 … 1.2.9); al llegar a 9 se reinicia a 0 y sube MENOR
 // (1.2.9 → 1.3.0).
 // ════════════════════════════════════════════════════════════════
-const APP_VERSION = '1.4.2';
+const APP_VERSION = '1.4.3';
 
 // ════════════════════════════════════════════════════════════════
 // CONSTANTES DE LA APP
@@ -863,7 +863,13 @@ const fRow = (l,v) => `<div class="dr"><div class="dl">${l}</div><div class="dv"
 const lbl  = (t,req) => `<label class="lbl">${t}${req?'<span style="color:red;margin-left:2px">*</span>':''}</label>`;
 const fld  = (l,h,req,span) => `<div${span?' class="span2"':''}>${lbl(l,req)}${h}</div>`;
 const inp  = (k,pl) => `<input value="${esc(S.form[k]||'')}" placeholder="${pl||''}" oninput="sf('${k}',this.value)">`;
-const di   = k => `<input type="date" value="${esc(S.form[k]||'')}" onchange="sf('${k}',this.value)">`;
+// type="date" dispara 'change' en cada segmento (día/mes/año) que queda
+// completo mientras el usuario sigue escribiendo, no sólo al terminar — si
+// eso re-renderiza el formulario (destruye y recrea el <input>), el picker
+// pierde el segmento activo y no se puede terminar de teclear la fecha.
+// Por eso el valor se guarda en vivo sin redibujar, y sólo al salir del
+// campo (blur) se dispara sf(), que sí puede recalcular y re-renderizar.
+const di   = k => `<input type="date" value="${esc(S.form[k]||'')}" onchange="S.form['${k}']=this.value" onblur="sf('${k}',this.value)">`;
 // Chips de fechas candidatas (detectadas en el resumen/notas) para campos de
 // fecha que aún están vacíos — un clic las llena, pero no se autocompletan
 // solas porque el texto libre suele mencionar fechas de trámites posteriores
@@ -1503,9 +1509,9 @@ function rForm() {
         ${fld('Fecha de Emplazamiento',di('fechaEmplazamiento')+sugerenciaFechaHTML('fechaEmplazamiento','emplaz'))}
         ${fld('Fecha para dar Contestación',di('fechaContestacion')+plazoInfoHTML(S.form.fechaEmplazamiento,S.form.tipoJuicio,S.form.viaProcesal))}
         ${fld('Fecha de Próxima Audiencia',di('fechaProximaAudiencia'))}
-        ${fld('Fecha de Sentencia',`<input type="date" value="${S.form.fechaSentencia||''}" onchange="sf('fechaSentencia',this.value);recalcFirmeza()">`)}
+        ${fld('Fecha de Sentencia',`<input type="date" value="${S.form.fechaSentencia||''}" onchange="S.form.fechaSentencia=this.value" onblur="sf('fechaSentencia',this.value);recalcFirmeza()">`)}
         ${fld('Efecto de la Sentencia',`<select onchange="sf('efectoSentencia',this.value);recalcFirmeza()">${EFECTO_SENTENCIA.map(o=>`<option value="${esc(o)}"${S.form.efectoSentencia===o?' selected':''}>${o||'Seleccionar…'}</option>`).join('')}</select>`)}
-        ${fld('Fecha de Notificación de Sentencia',`<input type="date" value="${S.form.fechaNotificacionSentencia||''}" onchange="sf('fechaNotificacionSentencia',this.value);recalcFirmeza()">`,false,false,true)}
+        ${fld('Fecha de Notificación de Sentencia',`<input type="date" value="${S.form.fechaNotificacionSentencia||''}" onchange="S.form.fechaNotificacionSentencia=this.value" onblur="sf('fechaNotificacionSentencia',this.value);recalcFirmeza()">`,false,false,true)}
         ${fld('Fecha de Firmeza','<span style="font-size:10.5px;color:#94a3b8;font-style:italic">Se calcula en el panel inferior — editable</span>')}
       </div>
       ${firmezaPanelHTML(S.form, true)}
@@ -2486,7 +2492,7 @@ function firmezaPanelHTML(e, editable) {
       <div class="firmeza-item">
         <span class="firmeza-lbl">Firmeza estimada <span style="font-weight:500;font-size:10.5px">(+15 días hábiles · Art. 63)</span></span>
         ${editable
-          ? `<input type="date" value="${e.fechaFirmeza||''}" onchange="sf('fechaFirmeza',this.value);recalcFirmeza()" style="font-size:13px;font-weight:900;color:#0f2044;border:none;border-bottom:2px solid #d4a017;background:transparent;padding:2px 0;width:100%;font-family:inherit">`
+          ? `<input type="date" value="${e.fechaFirmeza||''}" onchange="S.form.fechaFirmeza=this.value" onblur="sf('fechaFirmeza',this.value);recalcFirmeza()" style="font-size:13px;font-weight:900;color:#0f2044;border:none;border-bottom:2px solid #d4a017;background:transparent;padding:2px 0;width:100%;font-family:inherit">`
           : `<span class="firmeza-val">${fd(e.fechaFirmeza || cf.firmeza) || '—'}</span>`}
         <span class="firmeza-sub">Art. 63 LFPCA — período para interponer recurso de revisión</span>
       </div>
